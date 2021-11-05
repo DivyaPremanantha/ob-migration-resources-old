@@ -39,7 +39,7 @@
     </scm>
 
     <modules>
-        <module>components/org.wso2.ob.migration.client/migration-service</module>
+        <module>components/org.wso2.ob.migration.client/ob-migration-service</module>
     </modules>
 
     <dependencyManagement>
