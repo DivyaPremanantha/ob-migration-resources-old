@@ -1,0 +1,25 @@
+migrationEnable: "true"
+
+# Migration Start Version
+currentVersion: "2.0.0"
+# Migration End Version
+migrateVersion: "3.0.0"
+
+continueOnError: "false"
+batchUpdate: "true"
+ignoreForInactiveTenants: "true"
+
+migrateTenantRange: "false"
+migrationStartingTenantID: "0"
+migrationEndingTenantID: "0"
+
+versions:
+ -
+  version: "3.0.0"
+  migratorConfigs:
+   -
+    name: "AccountConsentMigrator"
+    order: 1
+    parameters:
+      location: "step1"
+      schema: "ob"
