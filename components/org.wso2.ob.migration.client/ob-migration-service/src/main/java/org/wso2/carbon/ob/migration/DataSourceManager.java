@@ -17,8 +17,8 @@ package org.wso2.carbon.ob.migration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.carbon.consent.mgt.core.util.ConsentConfigParser;
 import org.wso2.carbon.identity.core.migrate.MigrationClientException;
+import org.wso2.carbon.ob.migration.config.Config;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -57,26 +57,18 @@ public class DataSourceManager {
      * @throws MigrationClientException
      */
     private void initObDataSource() throws MigrationClientException {
-
-        ConsentConfigParser configParser = new ConsentConfigParser();
-        // check for a config reader
-//        String dataSourceName = configParser.getConsentDataSource();
-        String dataSourceName = "WSO2OB_DB";
-        if (dataSourceName == null) {
-            String errorMsg = "DataSource Element is not available for Consent management";
-            log.error(errorMsg);
-            throw new MigrationClientException(errorMsg);
-        }
-
-        // Should work but not sure
-        Context ctx;
+        Config config = Config.getInstance();
         try {
-            ctx = new InitialContext();
-            dataSource = (DataSource) ctx.lookup(dataSourceName);
-
+            Context ctx = new InitialContext();
+            dataSource = (DataSource) ctx.lookup(config.getDataSource());
+            if (dataSource == null) {
+                String errorMsg = "OB Datasource initialization error.";
+                throw new MigrationClientException(errorMsg);
+            }
         } catch (NamingException e) {
-            String errorMsg = "Error when looking up the Consent Data Source.";
-            throw new MigrationClientException(errorMsg, e);
+            String msg = "Error while looking up the data source: " + config.getDataSource();
+            log.error(msg);
+            throw new MigrationClientException(msg);
         }
     }
 

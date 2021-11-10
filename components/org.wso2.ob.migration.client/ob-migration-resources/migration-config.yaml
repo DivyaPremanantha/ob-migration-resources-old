@@ -13,6 +13,8 @@ migrateTenantRange: "false"
 migrationStartingTenantID: "0"
 migrationEndingTenantID: "0"
 
+dataSource: "jdbc/WSO2OB_DB"
+
 versions:
  -
   version: "3.0.0"

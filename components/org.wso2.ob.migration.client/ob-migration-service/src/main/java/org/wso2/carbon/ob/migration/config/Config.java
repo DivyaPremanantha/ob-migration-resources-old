@@ -44,6 +44,7 @@ public class Config {
     private List<Version> versions = new ArrayList<>();
     private String currentEncryptionAlgorithm;
     private String migratedEncryptionAlgorithm;
+    private String dataSource;
 
     private Config() {
 
@@ -209,5 +210,13 @@ public class Config {
     public void setMigratedEncryptionAlgorithm(String migratedEncryptionAlgorithm) {
 
         this.migratedEncryptionAlgorithm = migratedEncryptionAlgorithm;
+    }
+
+    public String getDataSource() {
+        return dataSource;
+    }
+
+    public void setDataSource(String dataSource) {
+        this.dataSource = dataSource;
     }
 }
