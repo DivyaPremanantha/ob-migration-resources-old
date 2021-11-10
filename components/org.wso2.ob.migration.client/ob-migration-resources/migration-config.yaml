@@ -21,6 +21,7 @@ versions:
   migratorConfigs:
    -
     name: "AccountConsentMigrator"
+    spec: "UK"
     order: 1
     parameters:
       location: "step1"
