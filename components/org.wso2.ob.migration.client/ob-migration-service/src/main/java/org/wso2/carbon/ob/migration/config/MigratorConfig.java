@@ -15,6 +15,8 @@
  */
 package org.wso2.carbon.ob.migration.config;
 
+import org.wso2.carbon.ob.migration.util.Specification;
+
 import java.util.Properties;
 
 /**
@@ -23,6 +25,7 @@ import java.util.Properties;
 public class MigratorConfig {
 
     private String name;
+    private Specification spec;
     private int order;
     private Properties parameters = new Properties();
 
@@ -59,6 +62,14 @@ public class MigratorConfig {
     public String getParameterValue(String parameterKey) {
 
         return getParameters().getProperty(parameterKey);
+    }
+
+    public Specification getSpec() {
+        return spec;
+    }
+
+    public void setSpec(Specification spec) {
+        this.spec = spec;
     }
 
     /**

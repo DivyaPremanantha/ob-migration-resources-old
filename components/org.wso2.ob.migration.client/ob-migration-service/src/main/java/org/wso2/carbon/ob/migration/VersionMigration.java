@@ -23,6 +23,7 @@ import org.wso2.carbon.ob.migration.config.MigratorConfig;
 import org.wso2.carbon.ob.migration.config.Version;
 import org.wso2.carbon.ob.migration.service.Migrator;
 import org.wso2.carbon.ob.migration.util.Constant;
+import org.wso2.carbon.ob.migration.util.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,11 +35,11 @@ public abstract class VersionMigration {
 
     private static final Logger log = LoggerFactory.getLogger(VersionMigration.class);
 
-    public void migrate() throws MigrationClientException {
+    public void migrate(String spec) throws MigrationClientException {
 
         String dryRun = System.getProperty(Constant.DRY_RUN);
 
-        List<Migrator> migrators = getMigrators();
+        List<Migrator> migrators = getMigrators(spec);
         for (Migrator migrator : migrators) {
             log.info(Constant.MIGRATION_LOG + "Version : " + getCurrentVersion() + ", Migration Step : " +
                     migrator.getClass().getSimpleName() + " of order : " + migrator.getMigratorConfig().getOrder() +
@@ -51,18 +52,21 @@ public abstract class VersionMigration {
         }
     }
 
-    public List<Migrator> getMigrators() throws MigrationClientException {
+    public List<Migrator> getMigrators(String spec) throws MigrationClientException {
 
         List<Migrator> migrators = new ArrayList<>();
         Version version = getMigrationConfig();
         List<MigratorConfig> migratorConfigs = version.getMigratorConfigs();
         for (MigratorConfig migratorConfig : migratorConfigs) {
-            String migratorName = migratorConfig.getName();
-            Migrator migrator = getMigrator(migratorName);
-            migrator.setMigratorConfig(migratorConfig);
-            migrator.setVersionConfig(version);
-            migrators.add(migrator);
+            if (migratorConfig.getSpec().equals(Specification.valueOf(spec))) {
+                String migratorName = migratorConfig.getName();
+                Migrator migrator = getMigrator(spec, migratorName);
+                migrator.setMigratorConfig(migratorConfig);
+                migrator.setVersionConfig(version);
+                migrators.add(migrator);
+            }
         }
+
         return migrators;
     }
 
@@ -70,12 +74,12 @@ public abstract class VersionMigration {
 
     public abstract String getCurrentVersion();
 
-    public Migrator getMigrator(String migratorName) {
+    public Migrator getMigrator(String spec, String migratorName) {
 
         Package aPackage = this.getClass().getPackage();
-        String basePackage = aPackage.getName() + ".migrator";
+        String basePackage = aPackage.getName() + "." + spec.toLowerCase() + ".migrator";
         try {
-            Class<?> migratorClass = Class.forName(basePackage + "." + migratorName);
+            Class<?> migratorClass = Class.forName(basePackage  + "." + migratorName);
             return (Migrator) migratorClass.newInstance();
         } catch (ClassNotFoundException e) {
             log.error("Migrator class not exists for: " + migratorName);
@@ -88,8 +92,7 @@ public abstract class VersionMigration {
     public Version getMigrationConfig() throws MigrationClientException {
 
         Config config = Config.getInstance();
-        Version version = config.getMigrateVersion(getCurrentVersion());
-        return version;
+        return config.getMigrateVersion(getPreviousVersion());
     }
 
 }

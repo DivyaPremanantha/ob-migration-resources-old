@@ -1,4 +1,4 @@
-package org.wso2.carbon.ob.migration.service.v200.migrator;
+package org.wso2.carbon.ob.migration.service.v200.uk.migrator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

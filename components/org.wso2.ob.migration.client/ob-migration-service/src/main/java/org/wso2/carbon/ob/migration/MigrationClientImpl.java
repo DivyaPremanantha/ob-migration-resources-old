@@ -18,8 +18,6 @@ package org.wso2.carbon.ob.migration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.core.ServerStartupObserver;
-import org.wso2.carbon.identity.core.migrate.MigrationClient;
-import org.wso2.carbon.identity.core.migrate.MigrationClientException;
 import org.wso2.carbon.ob.migration.config.Config;
 import org.wso2.carbon.ob.migration.util.Constant;
 import org.wso2.carbon.ob.migration.util.Utility;
@@ -44,9 +42,9 @@ public class MigrationClientImpl implements ServerStartupObserver {
 
         try {
             Config config = Config.getInstance();
-            String test = System.getProperty("migrationSpec");
+            String spec = System.getProperty("migrationSpec");
             log.info("............................................................................................");
-            log.info("....." + test + ".............................................................................." +
+            log.info("....." + spec + ".............................................................................." +
                     "....." +
                     ".");
 
@@ -84,7 +82,7 @@ public class MigrationClientImpl implements ServerStartupObserver {
                 log.info(Constant.MIGRATION_LOG + "Start Version : " + versionMigration.getPreviousVersion() + " to "
                         + versionMigration.getCurrentVersion());
                 if (!isMigrationStarted && versionMigration.getPreviousVersion().equals(config.getCurrentVersion())) {
-                    versionMigration.migrate();
+                    versionMigration.migrate(spec);
                     isMigrationStarted = true;
                     if (versionMigration.getCurrentVersion().equals(config.getMigrateVersion())) {
                         break;
@@ -93,7 +91,7 @@ public class MigrationClientImpl implements ServerStartupObserver {
                 }
 
                 if (isMigrationStarted) {
-                    versionMigration.migrate();
+                    versionMigration.migrate(spec);
                     if (versionMigration.getCurrentVersion().equals(config.getMigrateVersion())) {
                         break;
                     }
