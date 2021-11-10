@@ -16,7 +16,7 @@ import java.sql.SQLException;
 /**
  * This class handles consent DAO layer initiation with the relevant SQL statements per database types
  */
-public class ConsentDaoStoreInitializer {
+public class V300ConsentDaoStoreInitializer {
 
     private static final String MYSQL = "MySQL";
     private static final String H2 = "H2";
