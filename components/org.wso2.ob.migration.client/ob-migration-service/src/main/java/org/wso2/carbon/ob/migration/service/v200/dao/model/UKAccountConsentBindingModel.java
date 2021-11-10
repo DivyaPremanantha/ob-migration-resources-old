@@ -23,6 +23,10 @@ public class UKAccountConsentBindingModel {
         this.collectionMethod = collectionMethod;
     }
 
+    public UKAccountConsentBindingModel() {
+
+    }
+
     public String getUserId() {
 
         return userId;

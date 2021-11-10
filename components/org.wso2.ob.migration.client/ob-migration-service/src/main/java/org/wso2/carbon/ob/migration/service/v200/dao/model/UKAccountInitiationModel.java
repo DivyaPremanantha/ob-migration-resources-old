@@ -15,6 +15,10 @@ public class UKAccountInitiationModel {
     private LocalDateTime statusUpdateTimestamp = null;
     private String specVersion = null;
 
+    public UKAccountInitiationModel() {
+
+    }
+
     public UKAccountInitiationModel(String id, String request, LocalDateTime createdTimestamp, String status,
                                     String clientId, LocalDateTime statusUpdateTimestamp, String specVersion) {
 

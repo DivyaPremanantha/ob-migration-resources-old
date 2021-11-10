@@ -25,6 +25,10 @@ public class UKConsentRevModel {
         this.collectionMethod = collectionMethod;
     }
 
+    public UKConsentRevModel() {
+
+    }
+
     public String getId() {
 
         return id;
