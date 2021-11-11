@@ -1,4 +1,4 @@
-package org.wso2.carbon.ob.migration.service.v200.dao.constants;
+package org.wso2.carbon.ob.migration.service.v200.uk.constants;
 
 /**
  * This class contains the constants needed for the DAO layer.

@@ -1,11 +1,11 @@
-package org.wso2.carbon.ob.migration.service.v200.dao.model;
+package org.wso2.carbon.ob.migration.service.v200.uk.model;
 
 import java.time.LocalDateTime;
 
 /**
  * Accounts consent binding model class for UK v200 DB schema
  */
-public class UKAccountConsentBindingModel {
+public class UKConsentBindingModel {
 
     private String userId = null;
     private String consentId = null;
@@ -13,8 +13,8 @@ public class UKAccountConsentBindingModel {
     private LocalDateTime timestamp = null;
     private String collectionMethod = null;
 
-    public UKAccountConsentBindingModel(String userId, String consentId, String accountId, LocalDateTime timestamp,
-                                        String collectionMethod) {
+    public UKConsentBindingModel(String userId, String consentId, String accountId, LocalDateTime timestamp,
+                                 String collectionMethod) {
 
         this.userId = userId;
         this.consentId = consentId;
@@ -23,7 +23,7 @@ public class UKAccountConsentBindingModel {
         this.collectionMethod = collectionMethod;
     }
 
-    public UKAccountConsentBindingModel() {
+    public UKConsentBindingModel() {
 
     }
 

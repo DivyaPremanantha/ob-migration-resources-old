@@ -1,15 +1,15 @@
-package org.wso2.carbon.ob.migration.service.v200.dao.impl;
+package org.wso2.carbon.ob.migration.service.v200.uk.dao;
 
 import com.wso2.openbanking.accelerator.common.exception.OpenBankingException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.carbon.ob.migration.service.v200.dao.AccountsConsentDao;
-import org.wso2.carbon.ob.migration.service.v200.dao.model.UKAccountConsentBindingModel;
-import org.wso2.carbon.ob.migration.service.v200.dao.model.UKAccountConsentRevHistoryModel;
-import org.wso2.carbon.ob.migration.service.v200.dao.model.UKAccountInitiationModel;
-import org.wso2.carbon.ob.migration.service.v200.dao.model.UKConsentRevModel;
-import org.wso2.carbon.ob.migration.service.v200.dao.queries.AccountsSQLStatements;
-import org.wso2.carbon.ob.migration.service.v200.dao.util.ConsentDaoUtil;
+
+import org.wso2.carbon.ob.migration.service.v200.uk.model.UKAccountConsentRevHistoryModel;
+import org.wso2.carbon.ob.migration.service.v200.uk.model.UKConsentBindingModel;
+import org.wso2.carbon.ob.migration.service.v200.uk.model.UKConsentInitiationModel;
+import org.wso2.carbon.ob.migration.service.v200.uk.model.UKConsentRevModel;
+import org.wso2.carbon.ob.migration.service.v200.uk.queries.ConsentSQLStatements;
+import org.wso2.carbon.ob.migration.service.v200.uk.util.ConsentDaoUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,28 +18,28 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AccountsConsentDaoImpl implements AccountsConsentDao {
+public class V200ConsentDaoImpl implements V200ConsentDao {
 
-    private static Log log = LogFactory.getLog(AccountsConsentDaoImpl.class);
+    private static Log log = LogFactory.getLog(V200ConsentDaoImpl.class);
 
-    protected AccountsSQLStatements sqlStatements;
+    protected ConsentSQLStatements sqlStatements;
 
-    public AccountsConsentDaoImpl(AccountsSQLStatements sqlStatements) {
+    public V200ConsentDaoImpl(ConsentSQLStatements sqlStatements) {
 
         this.sqlStatements = sqlStatements;
     }
 
     @Override
-    public List<UKAccountInitiationModel> getAccountConsentInitiations(Connection connection)
+    public List<UKConsentInitiationModel> getConsentInitiations(Connection connection)
             throws OpenBankingException {
 
         String sqlStatements = this.sqlStatements.getConsentInitiations();
-        List<UKAccountInitiationModel> accountInitiations = new ArrayList<>();
+        List<UKConsentInitiationModel> accountInitiations = new ArrayList<>();
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sqlStatements)) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    accountInitiations.add(ConsentDaoUtil.mapToAccountInitiationModel(resultSet));
+                    accountInitiations.add(ConsentDaoUtil.mapToConsentInitiationModel(resultSet));
                 }
             }
         } catch (SQLException e) {
@@ -51,12 +51,12 @@ public class AccountsConsentDaoImpl implements AccountsConsentDao {
     }
 
     @Override
-    public List<UKAccountConsentBindingModel> getAccountConsentBindingByConsentId(Connection connection,
-                                                                                  String consentId)
+    public List<UKConsentBindingModel> getConsentBindingByConsentId(Connection connection,
+                                                                    String consentId)
             throws OpenBankingException {
 
-        String sqlStatements = this.sqlStatements.getAccountConsentBindingsByConsentId();
-        List<UKAccountConsentBindingModel> consentBindingModels = new ArrayList<>();
+        String sqlStatements = this.sqlStatements.getConsentBindingsByConsentId();
+        List<UKConsentBindingModel> consentBindingModels = new ArrayList<>();
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sqlStatements)) {
 
@@ -64,7 +64,7 @@ public class AccountsConsentDaoImpl implements AccountsConsentDao {
             preparedStatement.setString(1, consentId);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    consentBindingModels.add(ConsentDaoUtil.mapToAccountConsentBindingModel(resultSet));
+                    consentBindingModels.add(ConsentDaoUtil.mapToConsentBindingModel(resultSet));
                 }
             }
         } catch (SQLException e) {
@@ -78,7 +78,7 @@ public class AccountsConsentDaoImpl implements AccountsConsentDao {
     public List<UKConsentRevModel> getConsentRevByConsentId(Connection connection, String consentId)
             throws OpenBankingException {
 
-        String sqlStatements = this.sqlStatements.getAccountConsentRevsByConsentId();
+        String sqlStatements = this.sqlStatements.getConsentRevsByConsentId();
         List<UKConsentRevModel> consentRevModels = new ArrayList<>();
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sqlStatements)) {
@@ -98,11 +98,11 @@ public class AccountsConsentDaoImpl implements AccountsConsentDao {
     }
 
     @Override
-    public List<UKAccountConsentRevHistoryModel> getAccountConsentRevHistoryByConsentId(Connection connection,
-                                                                                        String consentId)
+    public List<UKAccountConsentRevHistoryModel> getConsentRevHistoryByConsentId(Connection connection,
+                                                                                 String consentId)
             throws OpenBankingException {
 
-        String sqlStatements = this.sqlStatements.getAccountConsentRevHistoryByConsentId();
+        String sqlStatements = this.sqlStatements.getConsentRevHistoryByConsentId();
         List<UKAccountConsentRevHistoryModel> consentRevHistoryModels = new ArrayList<>();
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sqlStatements)) {

@@ -1,11 +1,11 @@
-package org.wso2.carbon.ob.migration.service.v200.dao.model;
+package org.wso2.carbon.ob.migration.service.v200.uk.model;
 
 import java.time.LocalDateTime;
 
 /**
  * Accounts initiation model class for UK v200 DB schema
  */
-public class UKAccountInitiationModel {
+public class UKConsentInitiationModel {
 
     private String id = null;
     private String request = null;
@@ -14,12 +14,13 @@ public class UKAccountInitiationModel {
     private String clientId = null;
     private LocalDateTime statusUpdateTimestamp = null;
     private String specVersion = null;
+    private String idempotentKey = null;
 
-    public UKAccountInitiationModel() {
+    public UKConsentInitiationModel() {
 
     }
 
-    public UKAccountInitiationModel(String id, String request, LocalDateTime createdTimestamp, String status,
+    public UKConsentInitiationModel(String id, String request, LocalDateTime createdTimestamp, String status,
                                     String clientId, LocalDateTime statusUpdateTimestamp, String specVersion) {
 
         this.id = id;
@@ -99,5 +100,13 @@ public class UKAccountInitiationModel {
     public void setSpecVersion(String specVersion) {
 
         this.specVersion = specVersion;
+    }
+
+    public String getIdempotentKey() {
+        return idempotentKey;
+    }
+
+    public void setIdempotentKey(String idempotentKey) {
+        this.idempotentKey = idempotentKey;
     }
 }

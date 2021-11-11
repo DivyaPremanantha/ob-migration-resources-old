@@ -20,7 +20,7 @@ versions:
   version: "3.0.0"
   migratorConfigs:
    -
-    name: "AccountConsentMigrator"
+    name: "ConsentMigrator"
     spec: "UK"
     order: 1
     parameters:

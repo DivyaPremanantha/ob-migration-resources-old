@@ -1,13 +1,11 @@
-package org.wso2.carbon.ob.migration.service.v200.uk.utils;
+package org.wso2.carbon.ob.migration.service.v200.uk.util;
 
-import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.ob.migration.service.v200.uk.constants.UKCommonConstants;
-import org.wso2.carbon.ob.migration.service.v200.uk.migrator.AccountConsentMigrator;
 
 import java.time.Instant;
 import java.time.ZonedDateTime;

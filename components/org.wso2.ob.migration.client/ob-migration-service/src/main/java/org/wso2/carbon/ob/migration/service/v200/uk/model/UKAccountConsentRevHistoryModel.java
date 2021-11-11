@@ -1,4 +1,4 @@
-package org.wso2.carbon.ob.migration.service.v200.dao.model;
+package org.wso2.carbon.ob.migration.service.v200.uk.model;
 
 /**
  * Consent rev model class for UK v200 DB schema
