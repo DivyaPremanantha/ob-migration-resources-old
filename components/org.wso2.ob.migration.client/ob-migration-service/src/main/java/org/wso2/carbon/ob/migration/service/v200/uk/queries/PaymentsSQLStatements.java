@@ -23,4 +23,15 @@ public class PaymentsSQLStatements extends ConsentSQLStatements {
 
         return "";
     }
+
+    public String getStoreConsentFileByConsentId() {
+
+        return "INSERT INTO OB_CONSENT_FILE (`CONSENT_ID`, `CONSENT_FILE`) " +
+                "SELECT CONSENT_ID, PAYMENT_FILE AS PAYMENT_FILE FROM UK_TRANSACTION_FILE WHERE CONSENT_ID = ?";
+    }
+
+    public String getFileUploadIdempotencyKeyByConsentId() {
+
+        return "SELECT CONSENT_ID, IDEMPOTENT_KEY FROM UK_TRANSACTION_FILE WHERE CONSENT_ID = ?";
+    }
 }

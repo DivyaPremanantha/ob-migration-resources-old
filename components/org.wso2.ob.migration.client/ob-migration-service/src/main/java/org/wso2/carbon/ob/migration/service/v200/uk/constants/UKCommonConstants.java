@@ -24,14 +24,29 @@ public class UKCommonConstants {
     public static final String FUNDS_CONFIRMATIONS = "fundsconfirmations";
 
     public static final String AUTH_TYPE_AUTHORIZATION = "authorization";
-    public static final String AUTH_STATUS_CREATED = "created";
+    //todo verify 'multi-authorization' and 're-authorization' wordings
+    public static final String AUTH_TYPE_MULTI_AUTHORIZATION = "multi-authorization";
+    public static final String AUTH_TYPE_REAUTHORIZATION = "re-authorization";
 
+    public static final String AUTH_STATUS_CREATED = "created";
+    public static final String AUTH_STATUS_AUTHORIZED = "authorized";
+
+    // Audit reasons
     public static final String REASON_CREATE_CONSENT = "Create consent";
     public static final String REASON_REVOKE_CONSENT = "Revoke the consent";
     public static final String REASON_BIND_CONSENT = "Bind user accounts to consent";
     public static final String REASON_RECEIVE_SUBMISSION_REQUEST_FOR_CONSENT =
             "Receive submission request for the consent";
 
+    // Attribute names
+    //todo verify 'SPEC_VERSION' wordings
+    public static final String SPEC_VERSION = "SPEC_VERSION";
+    public static final String FILE_UPLOAD_IDEMPOTENCY_KEY = "FileUploadIdempotencyKey";
+    public static final String IDEMPOTENT_KEY = "IdempotencyKey";
     public static final String CONSENT_EXPIRY_TIME_ATTRIBUTE = "ExpirationDateTime";
+
+    public static final String NOT_APPLICABLE = "n/a";
+    public static final String CONSENT_MAPPING_STATUS_ACTIVE = "active";
+    public static final String CONSENT_MAPPING_STATUS_INACTIVE = "inactive";
 
 }

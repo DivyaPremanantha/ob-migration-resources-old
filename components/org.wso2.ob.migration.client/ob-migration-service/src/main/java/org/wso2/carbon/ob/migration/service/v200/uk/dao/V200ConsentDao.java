@@ -46,7 +46,24 @@ public interface V200ConsentDao {
      * @return
      */
     List<UKAccountConsentRevHistoryModel> getConsentRevHistoryByConsentId(Connection connection,
-                                                                                 String consentId)
+                                                                          String consentId)
+            throws OpenBankingException;
+
+    /**
+     * Method to store consent file by consentId
+     * @param connection
+     * @param consentId
+     * @return
+     */
+    boolean storeConsentFile(Connection connection, String consentId) throws OpenBankingException;
+
+    /**
+     * Method to get file upload idempotency key by consentId
+     * @param connection
+     * @param consentId
+     * @return
+     */
+    String getFileUploadIdempotencyKeyByConsentId(Connection connection, String consentId)
             throws OpenBankingException;
 
 }

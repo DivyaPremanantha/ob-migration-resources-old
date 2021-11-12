@@ -15,7 +15,6 @@ public class AccountsSQLStatements extends ConsentSQLStatements {
         return "SELECT * FROM UK_ACCOUNT_CONSENT_BINDING WHERE CONSENT_ID = ?";
     }
 
-
     public String getConsentRevsByConsentId() {
 
         return "SELECT * FROM UK_CONSENT_REV WHERE CONSENT_ID = ?";
@@ -24,5 +23,19 @@ public class AccountsSQLStatements extends ConsentSQLStatements {
     public String getConsentRevHistoryByConsentId() {
 
         return "SELECT * FROM UK_ACCOUNT_CONSENT_REV_HISTORY WHERE CONSENT_ID = ?";
+    }
+
+    // Consent file will be skipped for accounts
+    @Override
+    public String getStoreConsentFileByConsentId() {
+
+        return "";
+    }
+
+    // Consent file will be skipped for accounts
+    @Override
+    public String getFileUploadIdempotencyKeyByConsentId() {
+
+        return "";
     }
 }

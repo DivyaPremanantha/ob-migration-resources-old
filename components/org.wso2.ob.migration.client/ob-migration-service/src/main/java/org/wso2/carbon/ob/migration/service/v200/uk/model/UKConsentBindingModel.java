@@ -10,15 +10,17 @@ public class UKConsentBindingModel {
     private String userId = null;
     private String consentId = null;
     private String accountId = null;
+    private String debtorAccount = null;
     private LocalDateTime timestamp = null;
     private String collectionMethod = null;
 
-    public UKConsentBindingModel(String userId, String consentId, String accountId, LocalDateTime timestamp,
-                                 String collectionMethod) {
+    public UKConsentBindingModel(String userId, String consentId, String accountId, String debtorAccount,
+                                 LocalDateTime timestamp, String collectionMethod) {
 
         this.userId = userId;
         this.consentId = consentId;
         this.accountId = accountId;
+        this.debtorAccount = debtorAccount;
         this.timestamp = timestamp;
         this.collectionMethod = collectionMethod;
     }
@@ -55,6 +57,16 @@ public class UKConsentBindingModel {
     public void setAccountId(String accountId) {
 
         this.accountId = accountId;
+    }
+
+    public String getDebtorAccount() {
+
+        return debtorAccount;
+    }
+
+    public void setDebtorAccount(String debtorAccount) {
+
+        this.debtorAccount = debtorAccount;
     }
 
     public LocalDateTime getTimestamp() {
