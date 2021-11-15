@@ -25,4 +25,18 @@ public class FundsConfirmationSQLStatements extends ConsentSQLStatements{
 
         return "SELECT * FROM UK_COF_CONSENT_REV_HISTORY WHERE CONSENT_ID = ?";
     }
+
+    // Consent file will be skipped for cof
+    @Override
+    public String getStoreConsentFileByConsentId() {
+
+        return "";
+    }
+
+    // Consent file will be skipped for cof
+    @Override
+    public String getFileUploadIdempotencyKeyByConsentId() {
+
+        return "";
+    }
 }

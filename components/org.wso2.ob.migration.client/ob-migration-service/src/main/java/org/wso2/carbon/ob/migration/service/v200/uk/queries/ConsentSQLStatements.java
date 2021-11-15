@@ -9,4 +9,8 @@ public abstract class ConsentSQLStatements {
     public abstract String getConsentRevsByConsentId();
 
     public abstract String getConsentRevHistoryByConsentId();
+
+    public abstract String getStoreConsentFileByConsentId();
+
+    public abstract String getFileUploadIdempotencyKeyByConsentId();
 }

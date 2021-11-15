@@ -35,9 +35,9 @@ public class UKUtils {
             }
         } catch (ParseException e) {
             log.error("Invalid consent receipt data to fetch expiration time : " + request);
-            return -1L;
+            return 0;
         }
         log.error("Invalid consent receipt data to fetch expiration time : " + request);
-        return -1L;
+        return 0;
     }
 }

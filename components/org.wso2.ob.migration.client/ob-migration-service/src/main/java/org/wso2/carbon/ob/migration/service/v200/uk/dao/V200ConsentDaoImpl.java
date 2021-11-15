@@ -4,6 +4,7 @@ import com.wso2.openbanking.accelerator.common.exception.OpenBankingException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.wso2.carbon.ob.migration.service.v200.uk.constants.DaoConstants;
 import org.wso2.carbon.ob.migration.service.v200.uk.model.UKAccountConsentRevHistoryModel;
 import org.wso2.carbon.ob.migration.service.v200.uk.model.UKConsentBindingModel;
 import org.wso2.carbon.ob.migration.service.v200.uk.model.UKConsentInitiationModel;
@@ -119,5 +120,47 @@ public class V200ConsentDaoImpl implements V200ConsentDao {
             throw new OpenBankingException("Error occurred while retrieving account consent rev history");
         }
         return consentRevHistoryModels;
+    }
+
+    @Override
+    public boolean storeConsentFile(Connection connection, String consentId) throws OpenBankingException {
+
+        String sqlStatements = this.sqlStatements.getStoreConsentFileByConsentId();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlStatements)) {
+
+            log.debug(String.format("Populating prepared statement with consentId : %s", consentId));
+            preparedStatement.setString(1, consentId);
+            if (preparedStatement.executeUpdate() > 0) {
+                return true;
+            }
+        } catch (SQLException e) {
+            log.error("Error occurred while storing consent file for consentId: " + consentId);
+            throw new OpenBankingException("Error occurred while storing consent file");
+        }
+        log.error("Error occurred while storing consent file for consentId: " + consentId);
+        return false;
+    }
+
+    @Override
+    public String getFileUploadIdempotencyKeyByConsentId(Connection connection, String consentId) throws OpenBankingException {
+
+        String sqlStatements = this.sqlStatements.getFileUploadIdempotencyKeyByConsentId();
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sqlStatements)) {
+
+            log.debug(String.format("Populating prepared statement with consentId : %s", consentId));
+            preparedStatement.setString(1, consentId);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    return resultSet.getString(DaoConstants.IDEMPOTENT_KEY);
+                }
+            }
+        } catch (SQLException e) {
+            log.error("Error occurred while retrieving IDEMPOTENT_KEY for consentId: " + consentId);
+            throw new OpenBankingException("Error occurred while retrieving IDEMPOTENT_KEY");
+        }
+        log.debug("No IDEMPOTENT_KEY found for consentId: " + consentId);
+        return "";
     }
 }
