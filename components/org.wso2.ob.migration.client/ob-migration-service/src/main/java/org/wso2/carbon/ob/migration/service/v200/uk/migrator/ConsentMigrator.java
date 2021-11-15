@@ -2,40 +2,34 @@ package org.wso2.carbon.ob.migration.service.v200.uk.migrator;
 
 import com.wso2.openbanking.accelerator.common.exception.OpenBankingException;
 import com.wso2.openbanking.accelerator.consent.mgt.dao.ConsentCoreDAO;
-import com.wso2.openbanking.accelerator.consent.mgt.dao.exceptions.OBConsentDataInsertionException;
-import com.wso2.openbanking.accelerator.consent.mgt.dao.models.AuthorizationResource;
-import com.wso2.openbanking.accelerator.consent.mgt.dao.models.ConsentAttributes;
-import com.wso2.openbanking.accelerator.consent.mgt.dao.models.ConsentMappingResource;
-import com.wso2.openbanking.accelerator.consent.mgt.dao.models.ConsentResource;
-import com.wso2.openbanking.accelerator.consent.mgt.dao.models.ConsentStatusAuditRecord;
+import com.wso2.openbanking.accelerator.consent.mgt.dao.models.*;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.identity.core.migrate.MigrationClientException;
 import org.wso2.carbon.ob.migration.service.Migrator;
+import org.wso2.carbon.ob.migration.service.v200.uk.constants.UKCommonConstants;
 import org.wso2.carbon.ob.migration.service.v200.uk.dao.V200ConsentDao;
 import org.wso2.carbon.ob.migration.service.v200.uk.dao.V200ConsentDaoInitializer;
+import org.wso2.carbon.ob.migration.service.v200.uk.model.UKAccountConsentRevHistoryModel;
 import org.wso2.carbon.ob.migration.service.v200.uk.model.UKConsentBindingModel;
 import org.wso2.carbon.ob.migration.service.v200.uk.model.UKConsentInitiationModel;
-import org.wso2.carbon.ob.migration.service.v200.uk.constants.UKCommonConstants;
 import org.wso2.carbon.ob.migration.service.v200.uk.util.UKUtils;
 import org.wso2.carbon.ob.migration.service.v300.dao.V300ConsentDaoStoreInitializer;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ConsentMigrator extends Migrator {
 
-    private Connection conn = null;
     private static final Logger log = LoggerFactory.getLogger(ConsentMigrator.class);
 
     @Override
@@ -50,226 +44,228 @@ public class ConsentMigrator extends Migrator {
             connection.setAutoCommit(false);
 
             V200ConsentDao v200AccountsConsentDao = V200ConsentDaoInitializer.initializeAccountsConsentDAO(connection);
-            migrateConsentInitiation(connection, v200AccountsConsentDao, UKCommonConstants.ACCOUNTS);
+            migrateConsent(connection, v200AccountsConsentDao, UKCommonConstants.ACCOUNTS);
 
             V200ConsentDao v200FundsConfirmationConsentDao =
                     V200ConsentDaoInitializer.initializeFundsConfirmationConsentDAO(connection);
-            migrateConsentInitiation(connection, v200FundsConfirmationConsentDao, UKCommonConstants.FUNDS_CONFIRMATIONS);
+            migrateConsent(connection, v200FundsConfirmationConsentDao, UKCommonConstants.FUNDS_CONFIRMATIONS);
 
             V200ConsentDao v200PaymentsConsentDao =
                     V200ConsentDaoInitializer.initializePaymentsConsentDAO(connection);
-            migrateConsentInitiation(connection, v200PaymentsConsentDao, UKCommonConstants.PAYMENTS);
+            migrateConsent(connection, v200PaymentsConsentDao, UKCommonConstants.PAYMENTS);
 
         } catch (SQLException | OpenBankingException e) {
             throw new MigrationClientException("Failed to migrate permissions.", e);
         }
     }
 
-    private void migrateConsentInitiation(Connection connection, V200ConsentDao v200ConsentDao, String consentType) throws
+    private void migrateConsent(Connection connection, V200ConsentDao v200ConsentDao, String consentType) throws
             OpenBankingException, MigrationClientException {
 
         List<UKConsentInitiationModel> consentInitiations = v200ConsentDao.getConsentInitiations(connection);
         for (UKConsentInitiationModel consentInitiation : consentInitiations) {
-            String status = consentInitiation.getStatus();
-            if (status.equalsIgnoreCase(UKCommonConstants.V2_AWAITING_AUTHORISATION)) {
-                handleAwaitingAuthAccountConsent(consentInitiation, connection, consentType);
-            } else if (status.equalsIgnoreCase(UKCommonConstants.V2_AUTHORISED)) {
-                handleAuthorisedAccountConsent(consentInitiation, connection, consentType);
-            } else if (status.equalsIgnoreCase(UKCommonConstants.V2_REJECTED)) {
-                handleRejectedAccountConsent(consentInitiation);
-            } else if (status.equalsIgnoreCase(UKCommonConstants.V2_REVOKED)) {
-                handleRevokedAccountConsent(consentInitiation);
-            } else {
-                log.error(String.format("Unknown account consent status found %s for consentId : %s",
-                        status, consentInitiation.getId()));
-            }
+            handleConsent(consentInitiation, connection, consentType, consentInitiation.getStatus());
         }
     }
 
-    private void handleAwaitingAuthAccountConsent(UKConsentInitiationModel consentInitiation, Connection connection,
-                                                  String consentType)
-            throws MigrationClientException, OBConsentDataInsertionException {
-
-        ConsentCoreDAO v300ConsentCoreDAO =
-                V300ConsentDaoStoreInitializer.getInitializedConsentCoreDAOImpl(connection);
+    private void handleConsent(UKConsentInitiationModel consentInitiation, Connection connection,
+                               String consentType, String status)
+            throws MigrationClientException, OpenBankingException {
+        long createdTime = Instant.from(consentInitiation.getCreatedTimestamp().atZone(ZoneId.systemDefault()))
+                .getEpochSecond();
+        long updatedTime = Instant.from(consentInitiation.getStatusUpdateTimestamp().atZone(ZoneId.systemDefault()))
+                .getEpochSecond();
+        ConsentCoreDAO v300ConsentCoreDAO = V300ConsentDaoStoreInitializer.getInitializedConsentCoreDAOImpl(connection);
+        String fileUploadIdempotencyKey = null;
+        String currentStatus = getV3Status(status);
 
         // Store OB_CONSENT Row
-        ConsentResource consentResource = new ConsentResource();
-        consentResource.setConsentID(consentInitiation.getId());
-        consentResource.setReceipt(consentInitiation.getRequest());
-        ZonedDateTime createdTime = consentInitiation.getCreatedTimestamp().atZone(ZoneId.systemDefault());
-        consentResource.setCreatedTime(Instant.from(createdTime).getEpochSecond());
-        ZonedDateTime updatedTime = consentInitiation.getStatusUpdateTimestamp().atZone(ZoneId.systemDefault());
-        consentResource.setUpdatedTime(Instant.from(updatedTime).getEpochSecond());
-        consentResource.setClientID(consentInitiation.getClientId());
-        consentResource.setConsentType(consentType);
-        consentResource.setCurrentStatus(UKCommonConstants.V3_AWAITING_AUTHORISATION);
-        if (UKCommonConstants.PAYMENTS.equalsIgnoreCase(consentType)) {
-            consentResource.setConsentFrequency(0);
-            consentResource.setRecurringIndicator(false);
-            consentResource.setValidityPeriod(0);
-        } else {
-            consentResource.setConsentFrequency(0);
-            consentResource.setRecurringIndicator(true);
-            consentResource.setValidityPeriod(UKUtils.getExpirationTimeFromReceipt(consentInitiation.getRequest()));
-        }
+        ConsentResource consentResource = new ConsentResource(consentInitiation.getId(),
+                consentInitiation.getClientId(), consentInitiation.getRequest(), consentType, 0,
+                getValidityPeriod(consentInitiation, consentType), getRecurringIndicator(consentType),
+                currentStatus, createdTime, updatedTime);
         v300ConsentCoreDAO.storeConsentResource(connection, consentResource);
 
         // Store OB_CONSENT_AUTH_RESOURCE
-        AuthorizationResource authResource = new AuthorizationResource();
-        authResource.setUserID(null);
-        authResource.setConsentID(consentInitiation.getId());
-        authResource.setAuthorizationType(UKCommonConstants.AUTH_TYPE_AUTHORIZATION);
-        authResource.setAuthorizationStatus(UKCommonConstants.AUTH_STATUS_CREATED);
-        authResource.setUpdatedTime(Instant.from(updatedTime).getEpochSecond());
-        v300ConsentCoreDAO.storeAuthorizationResource(connection, authResource);
+        if (UKCommonConstants.V3_AWAITING_AUTHORISATION.equalsIgnoreCase(currentStatus)) {
+            AuthorizationResource authorizationResource = new AuthorizationResource(consentInitiation.getId(), null,
+                    UKCommonConstants.AUTH_STATUS_CREATED, UKCommonConstants.AUTH_TYPE_AUTHORIZATION,
+                    consentResource.getUpdatedTime());
+            v300ConsentCoreDAO.storeAuthorizationResource(connection, authorizationResource);
+        } else {
+            V200ConsentDao v200ConsentDao = getV200ConsentDao(consentType, connection);
+            List<UKConsentBindingModel> consentBindingByConsentId =
+                    v200ConsentDao.getConsentBindingByConsentId(connection, consentInitiation.getId());
+            List<String> distinctUserIds = consentBindingByConsentId.stream()
+                    .map(UKConsentBindingModel::getUserId).distinct().collect(Collectors.toList());
+
+            for (String userId : distinctUserIds) {
+                // Store OB_CONSENT_AUTH_RESOURCE for each user
+                String authType = getAuthType(distinctUserIds);
+                Map<String, String> statusMap = getStatus(currentStatus);
+                AuthorizationResource authorizationResource = new AuthorizationResource(consentInitiation.getId(), userId,
+                        statusMap.get(UKCommonConstants.AUTH_STATUS), authType, consentResource.getUpdatedTime());
+                v300ConsentCoreDAO.storeAuthorizationResource(connection, authorizationResource);
+
+                List<UKConsentBindingModel> userConsentBindings = consentBindingByConsentId.stream()
+                        .filter(ukConsentBindingModel -> ukConsentBindingModel.getUserId().equalsIgnoreCase(userId))
+                        .collect(Collectors.toList());
+                // Store OB_CONSENT_MAPPING for each accountIds
+                for (UKConsentBindingModel userConsentBinding : userConsentBindings) {
+                    ConsentMappingResource consentMappingResource =
+                            new ConsentMappingResource(authorizationResource.getAuthorizationID(),
+                                    getAccountID(userConsentBinding, consentType),
+                                    UKCommonConstants.NOT_APPLICABLE, statusMap.get(UKCommonConstants.CONSENT_STATUS));
+                    v300ConsentCoreDAO.storeConsentMappingResource(connection, consentMappingResource);
+                }
+            }
+            long actionTime = createdTime;
+            String actionBy = null;
+            if (!consentBindingByConsentId.isEmpty()) {
+                // set actionTime from consent binding.
+                ZonedDateTime actionTimestamp = consentBindingByConsentId.get(0)
+                        .getTimestamp().atZone(ZoneId.systemDefault());
+                actionTime = Instant.from(actionTimestamp).getEpochSecond();
+                // todo get verified for multiple user scenarios audit user
+                actionBy = distinctUserIds.get(0);
+            }
+            if (UKCommonConstants.V3_REJECTED.equalsIgnoreCase(currentStatus)) {
+                ConsentStatusAuditRecord rejectedConsentAudit = new ConsentStatusAuditRecord(consentInitiation.getId(),
+                        UKCommonConstants.V3_REJECTED, updatedTime,
+                        UKCommonConstants.REASON_BIND_CONSENT,
+                        actionBy, UKCommonConstants.V3_AWAITING_AUTHORISATION);
+                v300ConsentCoreDAO.storeConsentStatusAuditRecord(connection, rejectedConsentAudit);
+            } else {
+                ConsentStatusAuditRecord authorizedConsentAudit = new ConsentStatusAuditRecord(consentInitiation.getId(),
+                        UKCommonConstants.V3_AUTHORISED, actionTime, UKCommonConstants.REASON_BIND_CONSENT,
+                        actionBy, UKCommonConstants.V3_AWAITING_AUTHORISATION);
+                v300ConsentCoreDAO.storeConsentStatusAuditRecord(connection, authorizedConsentAudit);
+
+                if (UKCommonConstants.V3_REVOKED.equalsIgnoreCase(currentStatus)) {
+                    List<UKAccountConsentRevHistoryModel> revHistoryModels =
+                            v200ConsentDao.getConsentRevHistoryByConsentId(connection,
+                                    consentInitiation.getId());
+                    ConsentStatusAuditRecord revokedConsentAudit = new ConsentStatusAuditRecord(consentInitiation.getId(),
+                            UKCommonConstants.V3_REVOKED, updatedTime, revHistoryModels.get(0).getRevocationReason(),
+                            revHistoryModels.get(0).getRevocationUser(), UKCommonConstants.V3_AUTHORISED);
+                    v300ConsentCoreDAO.storeConsentStatusAuditRecord(connection, revokedConsentAudit);
+                } else if (UKCommonConstants.V3_CONSUMED.equalsIgnoreCase(currentStatus)) {
+                    ConsentStatusAuditRecord consumedConsentAudit =
+                            new ConsentStatusAuditRecord(consentInitiation.getId(),
+                                    UKCommonConstants.V3_CONSUMED, updatedTime,
+                                    UKCommonConstants.REASON_RECEIVE_SUBMISSION_REQUEST_FOR_CONSENT,
+                                    v200ConsentDao.getConsentBindingByConsentId(connection,
+                                            consentInitiation.getId()).get(0).getUserId()
+                                    , UKCommonConstants.V3_AUTHORISED);
+                    v300ConsentCoreDAO.storeConsentStatusAuditRecord(connection, consumedConsentAudit);
+                }
+
+            }
+            if (UKCommonConstants.PAYMENTS.equalsIgnoreCase(consentType)) {
+                // Store payment consent file
+                v200ConsentDao.storeConsentFile(connection, consentInitiation.getId());
+                // Check for file upload idempotency key
+                fileUploadIdempotencyKey = v200ConsentDao
+                        .getFileUploadIdempotencyKeyByConsentId(connection, consentInitiation.getId());
+            }
+        }
 
         // Store OB_CONSENT_STATUS_AUDIT
-        ConsentStatusAuditRecord consentStatusAuditRecord = new ConsentStatusAuditRecord();
-        consentStatusAuditRecord.setConsentID(consentInitiation.getId());
-        consentStatusAuditRecord.setCurrentStatus(UKCommonConstants.V3_AWAITING_AUTHORISATION);
-        consentStatusAuditRecord.setActionTime(Instant.from(createdTime).getEpochSecond());
-        consentStatusAuditRecord.setReason(UKCommonConstants.REASON_CREATE_CONSENT);
-        consentStatusAuditRecord.setActionBy(null);
-        consentStatusAuditRecord.setPreviousStatus(null);
+        ConsentStatusAuditRecord consentStatusAuditRecord = new ConsentStatusAuditRecord(consentInitiation.getId(),
+                UKCommonConstants.V3_AWAITING_AUTHORISATION, consentResource.getCreatedTime(),
+                UKCommonConstants.REASON_CREATE_CONSENT, null, null);
         v300ConsentCoreDAO.storeConsentStatusAuditRecord(connection, consentStatusAuditRecord);
 
-        // Store spec_version as consent attribute
-        ConsentAttributes consentAttributes = new ConsentAttributes();
-        Map<String, String> attributesMap = new HashMap<>();
-        attributesMap.put(UKCommonConstants.SPEC_VERSION, consentInitiation.getSpecVersion());
-        consentAttributes.setConsentID(consentInitiation.getId());
-        consentAttributes.setConsentAttributes(attributesMap);
+        // Store OB_CONSENT_ATTRIBUTE
+        Map<String, String> attributesMap = getAttributesMap(consentInitiation, fileUploadIdempotencyKey, consentType);
+        ConsentAttributes consentAttributes = new ConsentAttributes(consentInitiation.getId(), attributesMap);
         v300ConsentCoreDAO.storeConsentAttributes(connection, consentAttributes);
     }
 
-    private void handleAuthorisedAccountConsent(UKConsentInitiationModel consentInitiation, Connection connection,
-                                                String consentType)
-            throws MigrationClientException, OpenBankingException {
-
-        ConsentCoreDAO v300ConsentCoreDAO =
-                V300ConsentDaoStoreInitializer.getInitializedConsentCoreDAOImpl(connection);
-        V200ConsentDao v200AccountsConsentDao = V200ConsentDaoInitializer.initializeAccountsConsentDAO(connection);
-
-        // Store OB_CONSENT Row
-        ConsentResource consentResource = new ConsentResource();
-        consentResource.setConsentID(consentInitiation.getId());
-        consentResource.setReceipt(consentInitiation.getRequest());
-        ZonedDateTime createdTime = consentInitiation.getCreatedTimestamp().atZone(ZoneId.systemDefault());
-        consentResource.setCreatedTime(Instant.from(createdTime).getEpochSecond());
-        ZonedDateTime updatedTime = consentInitiation.getStatusUpdateTimestamp().atZone(ZoneId.systemDefault());
-        consentResource.setUpdatedTime(Instant.from(updatedTime).getEpochSecond());
-        consentResource.setClientID(consentInitiation.getClientId());
-        consentResource.setConsentType(consentType);
-        consentResource.setCurrentStatus(UKCommonConstants.V3_AUTHORISED);
-        if (UKCommonConstants.PAYMENTS.equalsIgnoreCase(consentType)) {
-            consentResource.setConsentFrequency(0);
-            consentResource.setRecurringIndicator(false);
-            consentResource.setValidityPeriod(0);
+    private V200ConsentDao getV200ConsentDao(String consentType, Connection connection) throws MigrationClientException {
+        V200ConsentDao v200ConsentDao;
+        if (UKCommonConstants.ACCOUNTS.equalsIgnoreCase(consentType)) {
+            v200ConsentDao = V200ConsentDaoInitializer.initializeAccountsConsentDAO(connection);
+        } else if (UKCommonConstants.FUNDS_CONFIRMATIONS.equalsIgnoreCase(consentType)) {
+            v200ConsentDao =
+                    V200ConsentDaoInitializer.initializeFundsConfirmationConsentDAO(connection);
         } else {
-            consentResource.setConsentFrequency(0);
-            consentResource.setRecurringIndicator(true);
-            consentResource.setValidityPeriod(UKUtils.getExpirationTimeFromReceipt(consentInitiation.getRequest()));
+            v200ConsentDao =
+                    V200ConsentDaoInitializer.initializePaymentsConsentDAO(connection);
         }
-        v300ConsentCoreDAO.storeConsentResource(connection, consentResource);
+        return v200ConsentDao;
+    }
 
-        List<UKConsentBindingModel> consentBindingByConsentId =
-                v200AccountsConsentDao.getConsentBindingByConsentId(connection, consentInitiation.getId());
-        List<String> distinctUserIds = consentBindingByConsentId.stream()
-                .map(UKConsentBindingModel::getUserId).distinct().collect(Collectors.toList());
-
-        for (String userId : distinctUserIds) {
-            // Store OB_CONSENT_AUTH_RESOURCE for each user
-            AuthorizationResource authResource = new AuthorizationResource();
-            authResource.setUserID(userId);
-            authResource.setConsentID(consentInitiation.getId());
-            // todo check multi auth table in payment flow
-            if (distinctUserIds.size() > 1) {
-                authResource.setAuthorizationType(UKCommonConstants.AUTH_TYPE_MULTI_AUTHORIZATION);
-            } else {
-                authResource.setAuthorizationType(UKCommonConstants.AUTH_TYPE_AUTHORIZATION);
-            }
-            authResource.setAuthorizationStatus(UKCommonConstants.AUTH_STATUS_AUTHORIZED);
-            authResource.setUpdatedTime(Instant.from(updatedTime).getEpochSecond());
-            AuthorizationResource authorizationResource =
-                    v300ConsentCoreDAO.storeAuthorizationResource(connection, authResource);
-
-            List<UKConsentBindingModel> userConsentBindings = consentBindingByConsentId.stream()
-                    .filter(ukConsentBindingModel -> ukConsentBindingModel.getUserId().equalsIgnoreCase(userId))
-                    .collect(Collectors.toList());
-
-            // Store OB_CONSENT_MAPPING for each accountIds
-            for (UKConsentBindingModel userConsentBinding : userConsentBindings) {
-                ConsentMappingResource consentMappingResource = new ConsentMappingResource();
-                consentMappingResource.setAuthorizationID(authorizationResource.getAuthorizationID());
-                if (UKCommonConstants.PAYMENTS.equalsIgnoreCase(consentType)) {
-                    consentMappingResource.setAccountID(userConsentBinding.getDebtorAccount());
-                } else {
-                    consentMappingResource.setAccountID(userConsentBinding.getAccountId());
-                }
-                consentMappingResource.setPermission(UKCommonConstants.NOT_APPLICABLE);
-                consentMappingResource.setMappingStatus(UKCommonConstants.CONSENT_MAPPING_STATUS_ACTIVE);
-                v300ConsentCoreDAO.storeConsentMappingResource(connection, consentMappingResource);
-            }
+    private String getV3Status(String status) {
+        String currentStatus;
+        if (UKCommonConstants.V2_AWAITING_AUTHORISATION.equalsIgnoreCase(status)) {
+            currentStatus = UKCommonConstants.V3_AWAITING_AUTHORISATION;
+        } else {
+            currentStatus = status.toLowerCase(Locale.ROOT);
         }
+        return currentStatus;
+    }
 
-        String fileUploadIdempotencyKey = "";
+    private String getAccountID(UKConsentBindingModel userConsentBinding, String consentType) {
+        String accountID;
         if (UKCommonConstants.PAYMENTS.equalsIgnoreCase(consentType)) {
-            // Store payment consent file
-            v200AccountsConsentDao.storeConsentFile(connection, consentInitiation.getId());
-            // Check for file upload idempotency key
-            fileUploadIdempotencyKey = v200AccountsConsentDao
-                    .getFileUploadIdempotencyKeyByConsentId(connection, consentInitiation.getId());
+            accountID = userConsentBinding.getDebtorAccount();
+        } else {
+            accountID = userConsentBinding.getAccountId();
         }
+        return accountID;
+    }
 
-        // Store awaitingAuth OB_CONSENT_STATUS_AUDIT
-        ConsentStatusAuditRecord consentStatusAuditRecord = new ConsentStatusAuditRecord();
-        consentStatusAuditRecord.setConsentID(consentInitiation.getId());
-        consentStatusAuditRecord.setCurrentStatus(UKCommonConstants.V3_AWAITING_AUTHORISATION);
-        consentStatusAuditRecord.setActionTime(Instant.from(createdTime).getEpochSecond());
-        consentStatusAuditRecord.setReason(UKCommonConstants.REASON_CREATE_CONSENT);
-        consentStatusAuditRecord.setActionBy(null);
-        consentStatusAuditRecord.setPreviousStatus(null);
-        v300ConsentCoreDAO.storeConsentStatusAuditRecord(connection, consentStatusAuditRecord);
-
-        // Store authorized OB_CONSENT_STATUS_AUDIT
-        ConsentStatusAuditRecord authorizedConsentAudit = new ConsentStatusAuditRecord();
-        authorizedConsentAudit.setConsentID(consentInitiation.getId());
-        authorizedConsentAudit.setCurrentStatus(UKCommonConstants.V3_AUTHORISED);
-        long actionTime = Instant.from(createdTime).getEpochSecond();
-        if (!consentBindingByConsentId.isEmpty()) {
-            // set actionTime from consent binding.
-            ZonedDateTime actionTimestamp = consentBindingByConsentId.get(0)
-                    .getTimestamp().atZone(ZoneId.systemDefault());
-            actionTime = Instant.from(actionTimestamp).getEpochSecond();
-            // todo get verified for multiple user scenarios audit user
-            authorizedConsentAudit.setActionBy(distinctUserIds.get(0));
+    private Map<String, String> getStatus(String status) {
+        Map<String, String> statusMap = new HashMap<>();
+        if (UKCommonConstants.V3_AUTHORISED.equalsIgnoreCase(status)) {
+            statusMap.put(UKCommonConstants.AUTH_STATUS, UKCommonConstants.V3_AUTHORISED);
+            statusMap.put(UKCommonConstants.CONSENT_STATUS, UKCommonConstants.CONSENT_MAPPING_STATUS_ACTIVE);
+        } else if (UKCommonConstants.V3_REJECTED.equalsIgnoreCase(status)) {
+            statusMap.put(UKCommonConstants.AUTH_STATUS, UKCommonConstants.V3_REJECTED);
+            statusMap.put(UKCommonConstants.CONSENT_STATUS, UKCommonConstants.CONSENT_MAPPING_STATUS_INACTIVE);
+        } else if (UKCommonConstants.V2_CONSUMED.equalsIgnoreCase(status)) {
+            statusMap.put(UKCommonConstants.AUTH_STATUS, UKCommonConstants.V3_CONSUMED);
+            statusMap.put(UKCommonConstants.CONSENT_STATUS, UKCommonConstants.CONSENT_MAPPING_STATUS_ACTIVE);
+        } else {
+            statusMap.put(UKCommonConstants.AUTH_STATUS, UKCommonConstants.V3_REVOKED);
+            statusMap.put(UKCommonConstants.CONSENT_STATUS, UKCommonConstants.CONSENT_MAPPING_STATUS_INACTIVE);
         }
-        authorizedConsentAudit.setActionTime(actionTime);
-        authorizedConsentAudit.setReason(UKCommonConstants.REASON_BIND_CONSENT);
-        authorizedConsentAudit.setPreviousStatus(UKCommonConstants.V3_AWAITING_AUTHORISATION);
-        v300ConsentCoreDAO.storeConsentStatusAuditRecord(connection, authorizedConsentAudit);
+        return statusMap;
+    }
 
-        // Store spec_version as consent attribute
-        ConsentAttributes consentAttributes = new ConsentAttributes();
+    private String getAuthType(List<String> distinctUserIds) {
+        // todo check multi auth table in payment flow
+        String authType;
+        if (distinctUserIds.size() > 1) {
+            authType = UKCommonConstants.AUTH_TYPE_MULTI_AUTHORIZATION;
+        } else {
+            authType = UKCommonConstants.AUTH_TYPE_AUTHORIZATION;
+        }
+        return authType;
+    }
+
+    private boolean getRecurringIndicator(String consentType) {
+        return !(UKCommonConstants.PAYMENTS.equalsIgnoreCase(consentType));
+    }
+
+    private long getValidityPeriod(UKConsentInitiationModel consentInitiation, String consentType) {
+        if (!(UKCommonConstants.PAYMENTS.equalsIgnoreCase(consentType))) {
+            return UKUtils.getExpirationTimeFromReceipt(consentInitiation.getRequest());
+        }
+        return 0;
+    }
+
+    private Map<String, String> getAttributesMap(UKConsentInitiationModel consentInitiation,
+                                                 String fileUploadIdempotencyKey, String consentType) {
         Map<String, String> attributesMap = new HashMap<>();
         attributesMap.put(UKCommonConstants.SPEC_VERSION, consentInitiation.getSpecVersion());
-        attributesMap.put(UKCommonConstants.IDEMPOTENT_KEY, consentInitiation.getIdempotentKey());
-        if (!fileUploadIdempotencyKey.isEmpty()) {
+        if (UKCommonConstants.PAYMENTS.equalsIgnoreCase(consentType)) {
+            attributesMap.put(UKCommonConstants.IDEMPOTENT_KEY, consentInitiation.getIdempotentKey());
+        }
+        if (StringUtils.isNotEmpty(fileUploadIdempotencyKey) && !fileUploadIdempotencyKey.isEmpty()) {
             attributesMap.put(UKCommonConstants.FILE_UPLOAD_IDEMPOTENCY_KEY, fileUploadIdempotencyKey);
         }
-        consentAttributes.setConsentID(consentInitiation.getId());
-        consentAttributes.setConsentAttributes(attributesMap);
-        v300ConsentCoreDAO.storeConsentAttributes(connection, consentAttributes);
-
+        return attributesMap;
     }
-
-    private void handleRejectedAccountConsent(UKConsentInitiationModel accountInitiation) {
-        //todo
-    }
-
-    private void handleRevokedAccountConsent(UKConsentInitiationModel accountInitiation) {
-        //todo
-    }
-
 }

@@ -38,11 +38,15 @@ public class ConsentDaoUtil {
         UKConsentBindingModel model = new UKConsentBindingModel();
         model.setUserId(resultSet.getString(DaoConstants.USER_ID));
         model.setConsentId(resultSet.getString(DaoConstants.CONSENT_ID));
-        model.setAccountId(resultSet.getString(DaoConstants.ACCOUNT_ID));
-        model.setDebtorAccount(resultSet.getString(DaoConstants.DEBTOR_ACCOUNT));
         model.setTimestamp(resultSet.getTimestamp(DaoConstants.TIMESTAMP).toLocalDateTime());
         model.setCollectionMethod(resultSet.getString(DaoConstants.COLLECTION_METHOD));
-        
+
+        if (resultSet.getMetaData().getColumnName(3).equalsIgnoreCase(DaoConstants.DEBTOR_ACCOUNT)) {
+            model.setDebtorAccount(resultSet.getString(DaoConstants.DEBTOR_ACCOUNT));
+        } else {
+            model.setAccountId(resultSet.getString(DaoConstants.ACCOUNT_ID));
+        }
+
         return model;
     }
 

@@ -49,4 +49,7 @@ public class UKCommonConstants {
     public static final String CONSENT_MAPPING_STATUS_ACTIVE = "active";
     public static final String CONSENT_MAPPING_STATUS_INACTIVE = "inactive";
 
+    public static final String AUTH_STATUS = "authStatus";
+    public static final String CONSENT_STATUS = "consentStatus";
+
 }

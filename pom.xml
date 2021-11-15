@@ -261,6 +261,6 @@
         <osgi.service.component.imp.pkg.version.range>[1.2.0, 2.0.0)</osgi.service.component.imp.pkg.version.range>
         <snakeyaml.version.range>[1.16.0, 1.17.0)</snakeyaml.version.range>
         <commons-lang.wso2.osgi.version.range>[2.6.0,3.0.0)</commons-lang.wso2.osgi.version.range>
-        <openbanking.accelerator.version>3.0.0</openbanking.accelerator.version>
+        <openbanking.accelerator.version>[3.0.0,4.0.0)</openbanking.accelerator.version>
     </properties>
 </project>
