@@ -20,7 +20,6 @@ public class ConsentDaoUtil {
         UKConsentInitiationModel model = new UKConsentInitiationModel();
         model.setId(resultSet.getString(DaoConstants.ID));
         model.setRequest(resultSet.getString(DaoConstants.REQUEST));
-        model.setCreatedTimestamp(resultSet.getTimestamp(DaoConstants.CREATED_TIMESTAMP).toLocalDateTime());
         model.setStatus(resultSet.getString(DaoConstants.STATUS));
         model.setClientId(resultSet.getString(DaoConstants.CLIENT_ID));
         model.setStatusUpdateTimestamp(resultSet.getTimestamp(DaoConstants.STATUS_UPDATED_TIMESTAMP).toLocalDateTime());
@@ -28,6 +27,9 @@ public class ConsentDaoUtil {
 
         if (resultSet.getMetaData().getColumnCount() > 7) {
             model.setIdempotentKey(resultSet.getString(DaoConstants.IDEMPOTENT_KEY));
+            model.setCreatedTimestamp(resultSet.getTimestamp(DaoConstants.TIMESTAMP).toLocalDateTime());
+        } else {
+            model.setCreatedTimestamp(resultSet.getTimestamp(DaoConstants.CREATED_TIMESTAMP).toLocalDateTime());
         }
         return model;
     }

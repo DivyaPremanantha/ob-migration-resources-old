@@ -198,8 +198,11 @@ public class ConsentMigrator extends Migrator {
 
     private String getV3Status(String status) {
         String currentStatus;
+        //authorized
         if (UKCommonConstants.V2_AWAITING_AUTHORISATION.equalsIgnoreCase(status)) {
             currentStatus = UKCommonConstants.V3_AWAITING_AUTHORISATION;
+        } else if (UKCommonConstants.V2_AUTHORISED.equalsIgnoreCase(status)){
+            currentStatus = UKCommonConstants.V3_AUTHORISED;
         } else {
             currentStatus = status.toLowerCase(Locale.ROOT);
         }

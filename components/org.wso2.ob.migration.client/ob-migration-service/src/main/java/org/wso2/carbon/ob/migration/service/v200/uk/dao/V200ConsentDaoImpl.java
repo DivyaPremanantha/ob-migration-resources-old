@@ -35,20 +35,20 @@ public class V200ConsentDaoImpl implements V200ConsentDao {
             throws OpenBankingException {
 
         String sqlStatements = this.sqlStatements.getConsentInitiations();
-        List<UKConsentInitiationModel> accountInitiations = new ArrayList<>();
+        List<UKConsentInitiationModel> consentInitiations = new ArrayList<>();
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(sqlStatements)) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    accountInitiations.add(ConsentDaoUtil.mapToConsentInitiationModel(resultSet));
+                    consentInitiations.add(ConsentDaoUtil.mapToConsentInitiationModel(resultSet));
                 }
             }
         } catch (SQLException e) {
-            log.error("Error occurred while retrieving account consent initiations");
-            throw new OpenBankingException("Error occurred while retrieving account consent initiations");
+            log.error("Error occurred while retrieving consent initiations" + e);
+            throw new OpenBankingException("Error occurred while retrieving consent initiations", e);
         }
 
-        return accountInitiations;
+        return consentInitiations;
     }
 
     @Override

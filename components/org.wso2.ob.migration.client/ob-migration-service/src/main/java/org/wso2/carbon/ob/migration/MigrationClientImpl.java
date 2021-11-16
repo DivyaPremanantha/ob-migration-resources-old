@@ -68,9 +68,6 @@ public class MigrationClientImpl implements ServerStartupObserver {
             List<VersionMigration> versionMigrationList = versionMigrationHolder.getVersionMigrationList();
 
             log.info("Migration Versions List.........................");
-            for (VersionMigration versionMigration : versionMigrationList) {
-                log.info(versionMigration.getPreviousVersion() + " to " + versionMigration.getCurrentVersion());
-            }
 
             boolean isMigrationStarted = false;
             if (Utility.isMigrateTenantRange()) {
@@ -79,6 +76,7 @@ public class MigrationClientImpl implements ServerStartupObserver {
             }
 
             for (VersionMigration versionMigration : versionMigrationList) {
+                log.info(versionMigration.getPreviousVersion() + " to " + versionMigration.getCurrentVersion());
                 log.info(Constant.MIGRATION_LOG + "Start Version : " + versionMigration.getPreviousVersion() + " to "
                         + versionMigration.getCurrentVersion());
                 if (!isMigrationStarted && versionMigration.getPreviousVersion().equals(config.getCurrentVersion())) {
