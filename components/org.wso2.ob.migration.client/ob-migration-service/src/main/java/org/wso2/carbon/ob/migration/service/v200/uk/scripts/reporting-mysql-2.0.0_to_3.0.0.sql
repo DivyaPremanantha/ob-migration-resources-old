@@ -210,13 +210,3 @@ DROP TABLE GreyList;
 DROP TABLE TransactionDeliveryAddress;
 DROP TABLE UserBlacklist;
 DROP TABLE UK_ADDITIONAL_RAW_DATA;
-
-
-
-
-
-
-
-
-
-
