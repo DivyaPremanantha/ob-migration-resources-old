@@ -146,56 +146,55 @@ FROM PAYMENTS_RAW_DATA PRD;
 DROP TABLE PAYMENTS_RAW_DATA PURGE;
 
 RENAME PAYMENTS_RAW_DATA_TEMP TO PAYMENTS_RAW_DATA;
---
---
--- -- API_LATENCY_RAW_DATA migration
---
--- CREATE TABLE `API_LATENCY_RAW_DATA` (
---     `ID` varchar(254) NOT NULL,
---     `MESSAGE_ID` varchar(254) NOT NULL,
---     `REQUEST_TIMESTAMP` varchar(254) DEFAULT NULL,
---     `BACKEND_LATENCY` bigint(20) DEFAULT NULL,
---     `REQUEST_MEDIATION_LATENCY` bigint(20) DEFAULT NULL,
---     `RESPONSE_LATENCY` bigint(20) DEFAULT NULL,
---     `RESPONSE_MEDIATION_LATENCY` bigint(20) DEFAULT NULL,
---     PRIMARY KEY (`ID`,`MESSAGE_ID`)
--- ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
---
--- INSERT INTO API_LATENCY_RAW_DATA
---     (ID, MESSAGE_ID, REQUEST_TIMESTAMP, BACKEND_LATENCY, REQUEST_MEDIATION_LATENCY, RESPONSE_LATENCY,
---      RESPONSE_MEDIATION_LATENCY)
--- SELECT UUID(),
---        ID,
---        CASE
---            WHEN REQUEST_EXQ_START_TIME > 0
---                THEN DATE_FORMAT(
---                    CONVERT_TZ(
---                            FROM_UNIXTIME(REQUEST_EXQ_START_TIME/1000),
---                            @@session.time_zone,
---                            '+00:00'
---                        ),
---                    '%Y-%m-%dT%T.000Z'
---                )
---            ELSE  DATE_FORMAT(
---                    CONVERT_TZ( FROM_UNIXTIME(TIMESTAMP), @@session.time_zone, '+00:00'),
---                    '%Y-%m-%dT%T.000Z'
---                )
---            END,
---        BACKEND_LATENCY,
---        ( BACKEND_REQ_START_TIME - REQUEST_EXQ_START_TIME ),
---        CASE
---            WHEN REQUEST_EXQ_START_TIME > 0 AND ( TIMESTAMP * 1000 - REQUEST_EXQ_START_TIME ) > 0
---                THEN  ( TIMESTAMP * 1000 - REQUEST_EXQ_START_TIME )
---            ELSE 0
---            END,
---        CASE
---            WHEN BACKEND_REQ_END_TIME > 0 AND ( TIMESTAMP * 1000 - BACKEND_REQ_END_TIME ) > 0
---                THEN  ( TIMESTAMP * 1000 - BACKEND_REQ_END_TIME )
---            ELSE 0
---            END
--- FROM   API_INVOCATION_RAW_DATA;
---
---
+
+
+-- API_LATENCY_RAW_DATA migration
+
+CREATE TABLE API_LATENCY_RAW_DATA (
+    ID varchar(254) ,
+    MESSAGE_ID varchar(254) ,
+    REQUEST_TIMESTAMP varchar(254) ,
+    BACKEND_LATENCY NUMBER(19) ,
+    REQUEST_MEDIATION_LATENCY NUMBER(19) ,
+    RESPONSE_LATENCY NUMBER(19) ,
+    RESPONSE_MEDIATION_LATENCY NUMBER(19) ,
+    PRIMARY KEY (ID,MESSAGE_ID)
+);
+
+INSERT INTO API_LATENCY_RAW_DATA
+(ID, MESSAGE_ID, REQUEST_TIMESTAMP, BACKEND_LATENCY, REQUEST_MEDIATION_LATENCY, RESPONSE_LATENCY,
+ RESPONSE_MEDIATION_LATENCY)
+SELECT
+    lower(
+            regexp_replace(
+                    rawtohex(
+                            sys_guid()),
+                    '([A-F0-9]{8})([A-F0-9]{4})([A-F0-9]{4})([A-F0-9]{4})([A-F0-9]{12})',
+                    '\1-\2-\3-\4-\5')
+        ),
+    ID,
+    CASE
+        WHEN REQUEST_EXQ_START_TIME > 0
+            THEN TO_CHAR((TIMESTAMP '1970-01-01 00:00:00 UTC' + REQUEST_EXQ_START_TIME/1000 * INTERVAL '1' SECOND),
+                'YYYY-MM-DD"T"HH24:MI:SS.FF3"Z"')
+            ELSE TO_CHAR((TIMESTAMP '1970-01-01 00:00:00 UTC' + TIMESTAMP * INTERVAL '1' SECOND),
+                'YYYY-MM-DD"T"HH24:MI:SS.FF3"Z"')
+        END,
+    BACKEND_LATENCY,
+    ( BACKEND_REQ_START_TIME - REQUEST_EXQ_START_TIME ),
+    CASE
+        WHEN REQUEST_EXQ_START_TIME > 0 AND ( TIMESTAMP * 1000 - REQUEST_EXQ_START_TIME ) > 0
+            THEN  ( TIMESTAMP * 1000 - REQUEST_EXQ_START_TIME )
+        ELSE 0
+        END,
+    CASE
+        WHEN BACKEND_REQ_END_TIME > 0 AND ( TIMESTAMP * 1000 - BACKEND_REQ_END_TIME ) > 0
+            THEN  ( TIMESTAMP * 1000 - BACKEND_REQ_END_TIME )
+        ELSE 0
+        END
+FROM   API_INVOCATION_RAW_DATA;
+
+
 -- -- API_INVOCATION_RAW_DATA migration
 --
 -- ALTER TABLE API_INVOCATION_RAW_DATA DROP COLUMN REQUEST_EXQ_START_TIME;
