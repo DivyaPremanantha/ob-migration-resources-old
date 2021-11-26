@@ -17,7 +17,7 @@ dataSource: "jdbc/WSO2OB_DB"
 
 versions:
  -
-  version: "3.0.0"
+  version: "2.0.0"
   migratorConfigs:
    -
     name: "ConsentMigrator"
@@ -25,4 +25,11 @@ versions:
     order: 1
     parameters:
       location: "step1"
+      schema: "ob"
+  -
+    name: "DCRMigrator"
+    spec: "UK"
+    order: 1
+    parameters:
+      location: "step2"
       schema: "ob"
