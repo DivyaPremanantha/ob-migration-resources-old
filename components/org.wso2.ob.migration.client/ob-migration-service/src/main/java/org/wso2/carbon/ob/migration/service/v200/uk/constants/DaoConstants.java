@@ -30,4 +30,6 @@ public class DaoConstants {
     public static final String METADATA_VALUE = "METADATA_VALUE";
     public static final String METADATA = "METADATA";
 
+    public static final String TPP_NAME = "TPP_NAME";
+
 }

@@ -38,6 +38,7 @@ public class ConsentMigrator extends Migrator {
         log.info("Dry run");
     }
 
+    @Override
     public void migrate() throws MigrationClientException {
 
         try (Connection connection = getDataSource().getConnection()) {

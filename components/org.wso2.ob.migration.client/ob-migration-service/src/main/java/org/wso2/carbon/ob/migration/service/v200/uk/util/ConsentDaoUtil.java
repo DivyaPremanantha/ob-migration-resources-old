@@ -1,11 +1,7 @@
 package org.wso2.carbon.ob.migration.service.v200.uk.util;
 
-import org.apache.commons.lang.StringUtils;
 import org.wso2.carbon.ob.migration.service.v200.uk.constants.DaoConstants;
-import org.wso2.carbon.ob.migration.service.v200.uk.model.UKConsentBindingModel;
-import org.wso2.carbon.ob.migration.service.v200.uk.model.UKAccountConsentRevHistoryModel;
-import org.wso2.carbon.ob.migration.service.v200.uk.model.UKConsentInitiationModel;
-import org.wso2.carbon.ob.migration.service.v200.uk.model.UKConsentRevModel;
+import org.wso2.carbon.ob.migration.service.v200.uk.model.*;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -32,6 +28,16 @@ public class ConsentDaoUtil {
             model.setCreatedTimestamp(resultSet.getTimestamp(DaoConstants.CREATED_TIMESTAMP).toLocalDateTime());
         }
         return model;
+    }
+
+    public static DCRModel mapToDCRModel(ResultSet resultSet) throws SQLException {
+
+        DCRModel dcrModel = new DCRModel();
+        dcrModel.setId(resultSet.getString(DaoConstants.ID));
+        dcrModel.setClientId(resultSet.getString(DaoConstants.CLIENT_ID));
+        dcrModel.setRequest(resultSet.getString(DaoConstants.REQUEST));
+
+        return dcrModel;
     }
 
     public static UKConsentBindingModel mapToConsentBindingModel(ResultSet resultSet)
