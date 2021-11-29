@@ -23,6 +23,7 @@ import org.wso2.carbon.ob.migration.util.Specification;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Abstract class for version migration.
@@ -73,7 +74,7 @@ public abstract class VersionMigration {
     public Migrator getMigrator(String spec, String migratorName) {
 
         Package aPackage = this.getClass().getPackage();
-        String basePackage = aPackage.getName() + "." + spec.toLowerCase() + ".migrator";
+        String basePackage = aPackage.getName() + "." + spec.toLowerCase(Locale.ROOT) + ".migrator";
         try {
             Class<?> migratorClass = Class.forName(basePackage  + "." + migratorName);
             return (Migrator) migratorClass.newInstance();
