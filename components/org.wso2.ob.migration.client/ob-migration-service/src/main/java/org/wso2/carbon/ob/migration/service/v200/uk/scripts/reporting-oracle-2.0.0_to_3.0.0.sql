@@ -256,10 +256,6 @@ UPDATE API_INVOCATION_RAW_DATA SET ID =
 --
 -- -- Removing other additional tables.
 --
-DROP TABLE ApplicationBlacklist PURGE;
 DROP TABLE CONSENT_RAW_DATA PURGE;
-DROP TABLE FraudulentTransactionData PURGE;
-DROP TABLE GreyList PURGE;
 DROP TABLE TransactionDeliveryAddress PURGE;
-DROP TABLE UserBlacklist PURGE;
 DROP TABLE UK_ADDITIONAL_RAW_DATA PURGE;
