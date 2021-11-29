@@ -75,36 +75,29 @@ SET MESSAGE_ID = ( SELECT AIRD.ID
                                        ON AIRD.ID = FCRD.ID
                    WHERE FCRD.ID=FUNDS_CONFIRMATION_RAW_DATA.ID );
 
-UPDATE FUNDS_CONFIRMATION_RAW_DATA SET ID =
-                                           lower(
-                                                   regexp_replace(
-                                                           rawtohex(
-                                                                   sys_guid()),
-                                                           '([A-F0-9]{8})([A-F0-9]{4})([A-F0-9]{4})([A-F0-9]{4})([A-F0-9]{12})',
-                                                           '\1-\2-\3-\4-\5')
-                                               );
+UPDATE FUNDS_CONFIRMATION_RAW_DATA SET ID = lower(NEWID());
 
 
 -- PAYMENTS_RAW_DATA migration
 
 CREATE TABLE PAYMENTS_RAW_DATA_TEMP (
-                                        ID varchar(254) ,
+                                        ID varchar(254) NOT NULL,
                                         CONSENT_ID varchar(254) ,
                                         USER_ID varchar(254) ,
                                         TPP_ID varchar(254) ,
                                         CLIENT_ID varchar(254) ,
                                         PAYMENT_TYPE varchar(254) ,
-                                        TIMESTAMP NUMBER(19) ,
+                                        TIMESTAMP bigint NOT NULL,
                                         API_SPEC_VERSION varchar(254) ,
                                         CREDITOR_ACCOUNT_ID varchar(254) ,
                                         DEBTOR_ACCOUNT_ID varchar(254) ,
-                                        MULTI_AUTHORISATION NUMBER(1) ,
+                                        MULTI_AUTHORISATION BIT NULL ,
                                         CURRENCY varchar(254) ,
                                         AMOUNT varchar(254) ,
                                         NO_OF_TRANSACTIONS varchar(254) ,
                                         LOCAL_INSTRUMENT varchar(254) ,
                                         PAYMENT_SUBMISSION_ID varchar(254) ,
-                                        MULTI_AUTH_USERS_COUNT NUMBER(10) ,
+                                        MULTI_AUTH_USERS_COUNT int NULL ,
                                         PAYMENT_REFUND varchar(254) ,
                                         CONSENT_TYPE varchar(254) ,
                                         DELIVERY_ADDRESS varchar(254) ,
@@ -117,13 +110,7 @@ INSERT INTO PAYMENTS_RAW_DATA_TEMP
  DEBTOR_ACCOUNT_ID, MULTI_AUTHORISATION, CURRENCY, AMOUNT, NO_OF_TRANSACTIONS, LOCAL_INSTRUMENT,
  PAYMENT_SUBMISSION_ID, MULTI_AUTH_USERS_COUNT, PAYMENT_REFUND, CONSENT_TYPE, DELIVERY_ADDRESS, MESSAGE_ID)
 SELECT
-    lower(
-            regexp_replace(
-                    rawtohex(
-                            sys_guid()),
-                    '([A-F0-9]{8})([A-F0-9]{4})([A-F0-9]{4})([A-F0-9]{4})([A-F0-9]{12})',
-                    '\1-\2-\3-\4-\5')
-        ),
+    lower(NEWID()),
     CONSENT_ID, USER_ID, TPP_ID, CLIENT_ID, PAYMENT_TYPE, TIMESTAMP,
     (SELECT API_SPEC_VERSION from UK_ADDITIONAL_RAW_DATA UARD where UARD.ID=PRD.ID),
     CREDITOR_ACCOUNT_ID, DEBTOR_ACCOUNT_ID, MULTI_AUTHORISATION, CURRENCY, AMOUNT, NO_OF_TRANSACTIONS,
@@ -135,9 +122,9 @@ SELECT
     (SELECT ID from API_INVOCATION_RAW_DATA AIRD where AIRD.ID=PRD.ID)
 FROM PAYMENTS_RAW_DATA PRD;
 
-DROP TABLE PAYMENTS_RAW_DATA PURGE;
+DROP TABLE IF EXISTS PAYMENTS_RAW_DATA;
 
-RENAME PAYMENTS_RAW_DATA_TEMP TO PAYMENTS_RAW_DATA;
+sp_rename 'PAYMENTS_RAW_DATA_TEMP' , 'PAYMENTS_RAW_DATA';
 
 
 -- API_LATENCY_RAW_DATA migration
