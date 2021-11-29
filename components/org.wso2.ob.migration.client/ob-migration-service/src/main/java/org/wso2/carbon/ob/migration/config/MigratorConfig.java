@@ -13,6 +13,7 @@ package org.wso2.carbon.ob.migration.config;
 
 import org.wso2.carbon.ob.migration.util.Specification;
 
+import java.io.Serializable;
 import java.util.Properties;
 
 /**
@@ -61,17 +62,21 @@ public class MigratorConfig {
     }
 
     public Specification getSpec() {
+
         return spec;
     }
 
     public void setSpec(Specification spec) {
+
         this.spec = spec;
     }
 
     /**
      * Comparator implementation for Migration config.
      */
-    public static class Comparator implements java.util.Comparator<MigratorConfig> {
+    public static class Comparator implements java.util.Comparator<MigratorConfig>, Serializable {
+
+        private static final long serialVersionUID = 7885252581004845440L;
 
         @Override
         public int compare(MigratorConfig migratorConfigOne, MigratorConfig migratorConfigTwo) {

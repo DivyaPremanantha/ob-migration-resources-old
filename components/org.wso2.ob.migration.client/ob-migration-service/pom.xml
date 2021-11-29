@@ -10,7 +10,8 @@
   ~ please see the license as well as any agreement you’ve entered into with
   ~ WSO2 governing the purchase of this software and any associated services.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <parent>
         <groupId>org.wso2.carbon.ob.migration.resources</groupId>
@@ -72,7 +73,7 @@
             <groupId>org.wso2.carbon.identity.framework</groupId>
             <artifactId>org.wso2.carbon.identity.mgt</artifactId>
         </dependency>
-       <dependency>
+        <dependency>
             <groupId>org.wso2.orbit.org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
         </dependency>
@@ -144,7 +145,8 @@
                             org.osgi.service.component; version="${osgi.service.component.imp.pkg.version.range}",
                             org.apache.commons.logging; version="${version.commons.logging}",
                             org.wso2.carbon.identity.core.*; version="${carbon.identity.framework.version.range}",
-                            org.wso2.carbon.identity.role.mgt.core.*; version="${carbon.identity.framework.version.range}",
+                            org.wso2.carbon.identity.role.mgt.core.*;
+                            version="${carbon.identity.framework.version.range}",
                             org.wso2.carbon.database.utils.*; version="${org.wso2.carbon.database.utils.version.range}",
                             org.apache.commons.lang; version="${commons-lang.wso2.osgi.version.range}",
                             org.wso2.carbon.base.api,
@@ -173,6 +175,27 @@
                             <finalName>wso2ob-migration-${project.version}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>Low</threshold>
+                    <xmlOutput>true</xmlOutput>
+                    <findbugsXmlOutputDirectory>${project.build.directory}/findbugs
+                    </findbugsXmlOutputDirectory>
+                    <excludeFilterFile>src/main/resources/findbugs-exclude.xml</excludeFilterFile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>analyze-compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

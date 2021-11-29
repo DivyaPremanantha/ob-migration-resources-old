@@ -55,11 +55,13 @@ public class ReportUtil {
 
         if (builder.length() > MAX_LENGTH) {
             Thread thread = new Thread(() -> {
-                try {
-                    commit();
-                    log.info("Report file with name {} created inside {}.", fileName, filePath);
-                } catch (IOException e) {
-                    log.error("Error while writing the report file.", e);
+                synchronized (this) {
+                    try {
+                        commit();
+                        log.info("Report file with name {} created inside {}.", fileName, filePath);
+                    } catch (IOException e) {
+                        log.error("Error while writing the report file.", e);
+                    }
                 }
             });
             thread.start();
