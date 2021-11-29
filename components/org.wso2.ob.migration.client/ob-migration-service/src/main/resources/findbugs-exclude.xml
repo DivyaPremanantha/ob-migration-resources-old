@@ -16,4 +16,8 @@
         <Class name="org.wso2.carbon.ob.migration.service.v200.uk.dao.V200ConsentDaoImpl"/>
         <Bug pattern="SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"/>
     </Match>
+    <Match>
+        <Class name="org.wso2.carbon.ob.migration.service.v200.uk.dao.V200DCRDAoImpl"/>
+        <Bug pattern="SQL_PREPARED_STATEMENT_GENERATED_FROM_NONCONSTANT_STRING"/>
+    </Match>
 </FindBugsFilter>
