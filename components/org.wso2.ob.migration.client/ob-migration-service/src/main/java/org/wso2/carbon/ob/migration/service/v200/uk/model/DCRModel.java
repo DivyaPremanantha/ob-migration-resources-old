@@ -30,7 +30,9 @@ public class DCRModel {
 
     }
 
-    public DCRModel(String id, String tppName, String requestHeader, String request, String clientId, String softwareEnv, String applicationId, String softwareId, String specVersion, String createdTimestamp, String status, String clidIssuedAt, String statusUpdateTimestamp) {
+    public DCRModel(String id, String tppName, String requestHeader, String request, String clientId,
+                    String softwareEnv, String applicationId, String softwareId, String specVersion,
+                    String createdTimestamp, String status, String clidIssuedAt, String statusUpdateTimestamp) {
         this.id = id;
         this.tppName = tppName;
         this.requestHeader = requestHeader;
