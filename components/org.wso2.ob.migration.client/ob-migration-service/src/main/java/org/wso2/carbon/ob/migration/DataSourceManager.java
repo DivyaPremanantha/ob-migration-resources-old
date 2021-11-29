@@ -27,7 +27,7 @@ import javax.sql.DataSource;
 public class DataSourceManager {
 
     private static final Logger log = LoggerFactory.getLogger(DataSourceManager.class);
-    private static DataSourceManager dataSourceManager = null;
+    private static volatile DataSourceManager dataSourceManager = null;
     private DataSource dataSource;
 
     private DataSourceManager() {
@@ -42,7 +42,11 @@ public class DataSourceManager {
     public static DataSourceManager getInstance() {
 
         if (DataSourceManager.dataSourceManager == null) {
-            DataSourceManager.dataSourceManager = new DataSourceManager();
+            synchronized (DataSourceManager.class) {
+                if (DataSourceManager.dataSourceManager == null) {
+                    DataSourceManager.dataSourceManager = new DataSourceManager();
+                }
+            }
         }
         return DataSourceManager.dataSourceManager;
     }
