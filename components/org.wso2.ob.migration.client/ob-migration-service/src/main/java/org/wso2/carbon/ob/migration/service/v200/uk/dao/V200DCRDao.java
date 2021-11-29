@@ -9,24 +9,15 @@
  * please see the license as well as any agreement you’ve entered into with
  * WSO2 governing the purchase of this software and any associated services.
  */
-package org.wso2.carbon.ob.migration.service.v200;
+package org.wso2.carbon.ob.migration.service.v200.uk.dao;
 
-import org.wso2.carbon.ob.migration.VersionMigration;
+import com.wso2.openbanking.accelerator.common.exception.OpenBankingException;
+import org.wso2.carbon.ob.migration.service.v200.uk.model.DCRModel;
 
-/**
- * Version Migration class.
- */
-public class V200Migration extends VersionMigration {
+import java.sql.Connection;
+import java.util.List;
 
-    @Override
-    public String getPreviousVersion() {
+public interface V200DCRDao {
 
-        return "2.0.0";
-    }
-
-    @Override
-    public String getCurrentVersion() {
-
-        return "3.0.0";
-    }
+    List<DCRModel> getDCRDetails(Connection connection) throws OpenBankingException;
 }

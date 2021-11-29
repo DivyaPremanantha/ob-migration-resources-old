@@ -9,24 +9,12 @@
  * please see the license as well as any agreement you’ve entered into with
  * WSO2 governing the purchase of this software and any associated services.
  */
-package org.wso2.carbon.ob.migration.service.v200;
+package org.wso2.carbon.ob.migration.service.v200.uk.queries;
 
-import org.wso2.carbon.ob.migration.VersionMigration;
+public class DCRSQLStatements {
 
-/**
- * Version Migration class.
- */
-public class V200Migration extends VersionMigration {
+    public String getDCRDetails() {
 
-    @Override
-    public String getPreviousVersion() {
-
-        return "2.0.0";
-    }
-
-    @Override
-    public String getCurrentVersion() {
-
-        return "3.0.0";
+        return "SELECT * FROM OB_DCR_DETAILS";
     }
 }
