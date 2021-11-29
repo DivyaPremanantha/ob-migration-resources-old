@@ -130,35 +130,26 @@ sp_rename 'PAYMENTS_RAW_DATA_TEMP' , 'PAYMENTS_RAW_DATA';
 -- API_LATENCY_RAW_DATA migration
 
 CREATE TABLE API_LATENCY_RAW_DATA (
-                                      ID varchar(254) ,
-                                      MESSAGE_ID varchar(254) ,
-                                      REQUEST_TIMESTAMP varchar(254) ,
-                                      BACKEND_LATENCY NUMBER(19) ,
-                                      REQUEST_MEDIATION_LATENCY NUMBER(19) ,
-                                      RESPONSE_LATENCY NUMBER(19) ,
-                                      RESPONSE_MEDIATION_LATENCY NUMBER(19) ,
-                                      PRIMARY KEY (ID,MESSAGE_ID)
+              ID varchar(254) ,
+              MESSAGE_ID varchar(254) ,
+              REQUEST_TIMESTAMP varchar(254) ,
+              BACKEND_LATENCY bigint NULL ,
+              REQUEST_MEDIATION_LATENCY bigint NULL ,
+              RESPONSE_LATENCY bigint NULL ,
+              RESPONSE_MEDIATION_LATENCY bigint NULL ,
+              PRIMARY KEY (ID,MESSAGE_ID)
 );
 
 INSERT INTO API_LATENCY_RAW_DATA
 (ID, MESSAGE_ID, REQUEST_TIMESTAMP, BACKEND_LATENCY, REQUEST_MEDIATION_LATENCY, RESPONSE_LATENCY,
  RESPONSE_MEDIATION_LATENCY)
 SELECT
-    lower(
-            regexp_replace(
-                    rawtohex(
-                            sys_guid()),
-                    '([A-F0-9]{8})([A-F0-9]{4})([A-F0-9]{4})([A-F0-9]{4})([A-F0-9]{12})',
-                    '\1-\2-\3-\4-\5')
-        ),
+    lower(NEWID()),
     ID,
-    CASE
-        WHEN REQUEST_EXQ_START_TIME > 0
-            THEN TO_CHAR((TIMESTAMP '1970-01-01 00:00:00 UTC' + REQUEST_EXQ_START_TIME/1000 * INTERVAL '1' SECOND),
-                         'YYYY-MM-DD"T"HH24:MI:SS.FF3"Z"')
-        ELSE TO_CHAR((TIMESTAMP '1970-01-01 00:00:00 UTC' + TIMESTAMP * INTERVAL '1' SECOND),
-                     'YYYY-MM-DD"T"HH24:MI:SS.FF3"Z"')
-        END,
+    CASE WHEN REQUEST_EXQ_START_TIME > 0
+        THEN FORMAT(dateadd(S, REQUEST_EXQ_START_TIME/1000, '1970-01-01 00:00:00'),'yyyy-MM-ddTHH:mm:ss.fffZ')
+        ELSE FORMAT(dateadd(S, TIMESTAMP, '1970-01-01 00:00:00'),'yyyy-MM-ddTHH:mm:ss.fffZ')
+    END,
     BACKEND_LATENCY,
     ( BACKEND_REQ_START_TIME - REQUEST_EXQ_START_TIME ),
     CASE
@@ -185,13 +176,13 @@ ALTER TABLE API_INVOCATION_RAW_DATA DROP COLUMN STATUS_MESSAGE;
 
 ALTER TABLE API_INVOCATION_RAW_DATA ADD API_SPEC_VERSION varchar(254);
 
-ALTER TABLE API_INVOCATION_RAW_DATA ADD TIMESTAMP_TEMP NUMBER(19);
+ALTER TABLE API_INVOCATION_RAW_DATA ADD TIMESTAMP_TEMP bigint NULL;
 UPDATE API_INVOCATION_RAW_DATA SET TIMESTAMP_TEMP = TIMESTAMP;
 ALTER TABLE API_INVOCATION_RAW_DATA DROP COLUMN TIMESTAMP;
-ALTER TABLE API_INVOCATION_RAW_DATA RENAME COLUMN TIMESTAMP_TEMP TO TIMESTAMP;
+sp_rename 'API_INVOCATION_RAW_DATA.TIMESTAMP_TEMP', 'TIMESTAMP', 'COLUMN';
 
 ALTER TABLE API_INVOCATION_RAW_DATA ADD MESSAGE_ID varchar(254);
-ALTER TABLE API_INVOCATION_RAW_DATA RENAME COLUMN TPP_ID TO CONSUMER_ID;
+sp_rename 'API_INVOCATION_RAW_DATA.TPP_ID', 'CONSUMER_ID', 'COLUMN';
 
 UPDATE API_INVOCATION_RAW_DATA SET MESSAGE_ID = ID;
 
@@ -202,14 +193,7 @@ SET API_SPEC_VERSION = ( SELECT UARD.API_SPEC_VERSION
                                              ON UARD.ID = AIRD.ID
                          WHERE AIRD.ID=API_INVOCATION_RAW_DATA.ID );
 
-UPDATE API_INVOCATION_RAW_DATA SET ID =
-                                       lower(
-                                               regexp_replace(
-                                                       rawtohex(
-                                                               sys_guid()),
-                                                       '([A-F0-9]{8})([A-F0-9]{4})([A-F0-9]{4})([A-F0-9]{4})([A-F0-9]{12})',
-                                                       '\1-\2-\3-\4-\5')
-                                           );
+UPDATE API_INVOCATION_RAW_DATA SET ID = lower(NEWID());
 
 --
 --
