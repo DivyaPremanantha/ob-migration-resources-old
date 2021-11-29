@@ -11,6 +11,9 @@
  */
 package org.wso2.carbon.ob.migration.service.v200.uk.queries;
 
+/**
+ * SQL statements for payments migration
+ */
 public class PaymentsSQLStatements extends ConsentSQLStatements {
 
     public String getConsentInitiations() {

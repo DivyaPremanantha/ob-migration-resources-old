@@ -11,6 +11,9 @@
  */
 package org.wso2.carbon.ob.migration.service.v200.uk.model;
 
+/**
+ * DCR data model class for UK v200 DB schema
+ */
 public class DCRModel {
     private String id = null;
     private String tppName = null;

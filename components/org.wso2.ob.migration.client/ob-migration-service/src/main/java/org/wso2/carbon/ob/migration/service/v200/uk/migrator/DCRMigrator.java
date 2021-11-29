@@ -30,8 +30,15 @@ import org.wso2.carbon.ob.migration.service.v200.uk.model.DCRModel;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
+/**
+ * DCRMigrator class to migrate DCR related data.
+ */
 public class DCRMigrator extends Migrator {
 
     private static final Logger log = LoggerFactory.getLogger(DCRMigrator.class);
@@ -56,7 +63,8 @@ public class DCRMigrator extends Migrator {
         }
     }
 
-    private void migrateDCR(Connection connection, V200DCRDao v200DCRDao) throws MigrationClientException, OpenBankingException {
+    private void migrateDCR(Connection connection, V200DCRDao v200DCRDao)
+            throws MigrationClientException, OpenBankingException {
         List<DCRModel> dcrModels = v200DCRDao.getDCRDetails(connection);
         String tenantDomain = PrivilegedCarbonContext.getThreadLocalCarbonContext().getTenantDomain();
         ApplicationManagementService applicationManagementService = ApplicationManagementService.getInstance();
@@ -143,7 +151,9 @@ public class DCRMigrator extends Migrator {
         }
     }
 
-    private void modifySpProperty(ServiceProviderProperty property, ServiceProvider serviceProvider, String tenantDomain) throws IdentityApplicationManagementException {
+    private void modifySpProperty(ServiceProviderProperty property, ServiceProvider serviceProvider,
+                                  String tenantDomain)
+            throws IdentityApplicationManagementException {
         String name = property.getName();
         String displayName = property.getDisplayName();
         if (name.toLowerCase(Locale.ROOT).contains("_production") ||

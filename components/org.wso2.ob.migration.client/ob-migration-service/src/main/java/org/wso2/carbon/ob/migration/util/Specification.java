@@ -11,6 +11,9 @@
  */
 package org.wso2.carbon.ob.migration.util;
 
+/**
+ * Specification enum class
+ */
 public enum Specification {
 
     UK("UK"),

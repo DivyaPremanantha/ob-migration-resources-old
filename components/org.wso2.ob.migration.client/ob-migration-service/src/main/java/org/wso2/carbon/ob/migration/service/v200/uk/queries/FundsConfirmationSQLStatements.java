@@ -12,9 +12,9 @@
 package org.wso2.carbon.ob.migration.service.v200.uk.queries;
 
 /**
- * SQL statements common to all database types
+ * SQL statements for CoF migration
  */
-public class FundsConfirmationSQLStatements extends ConsentSQLStatements{
+public class FundsConfirmationSQLStatements extends ConsentSQLStatements {
 
     public String getConsentInitiations() {
 
@@ -25,7 +25,6 @@ public class FundsConfirmationSQLStatements extends ConsentSQLStatements{
 
         return "SELECT * FROM UK_COF_CONSENT_BINDING WHERE CONSENT_ID = ?";
     }
-
 
     public String getConsentRevsByConsentId() {
 

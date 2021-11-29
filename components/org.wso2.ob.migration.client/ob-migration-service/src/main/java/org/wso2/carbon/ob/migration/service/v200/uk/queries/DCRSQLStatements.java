@@ -11,6 +11,9 @@
  */
 package org.wso2.carbon.ob.migration.service.v200.uk.queries;
 
+/**
+ * SQL statements for client migration
+ */
 public class DCRSQLStatements {
 
     public String getDCRDetails() {

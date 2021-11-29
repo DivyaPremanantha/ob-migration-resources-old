@@ -25,6 +25,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementation of V200DCRDao class
+ */
 public class V200DCRDAoImpl implements V200DCRDao {
 
     private static Log log = LogFactory.getLog(V200DCRDAoImpl.class);

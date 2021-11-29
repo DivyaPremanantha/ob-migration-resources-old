@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.carbon.base.api.ServerConfigurationService;
 import org.wso2.carbon.core.ServerStartupObserver;
-import org.wso2.carbon.identity.core.migrate.MigrationClient;
 import org.wso2.carbon.ob.migration.MigrationClientImpl;
 import org.wso2.carbon.registry.core.service.RegistryService;
 import org.wso2.carbon.user.core.service.RealmService;
