@@ -27,7 +27,7 @@ import java.util.List;
 public class Config {
 
     private static final Logger log = LoggerFactory.getLogger(Config.class);
-    private static Config config = null;
+    private static volatile Config config = null;
     private boolean migrationEnable;
     private String currentVersion;
     private String migrateVersion;
@@ -54,15 +54,19 @@ public class Config {
     public static Config getInstance() {
 
         if (config == null) {
-            String migrationConfigFileName = Utility.getMigrationResourceDirectoryPath() + File.separator +
-                    Constant.MIGRATION_CONFIG_FILE_NAME;
-            log.info(Constant.MIGRATION_LOG + "Loading Migration Configs, PATH:" + migrationConfigFileName);
-            try {
-                config = Utility.loadMigrationConfig(migrationConfigFileName);
-            } catch (MigrationClientException e) {
-                log.error("Error while loading migration configs.", e);
+            synchronized (Config.class) {
+                if (config == null) {
+                    String migrationConfigFileName = Utility.getMigrationResourceDirectoryPath() + File.separator +
+                            Constant.MIGRATION_CONFIG_FILE_NAME;
+                    log.info(Constant.MIGRATION_LOG + "Loading Migration Configs, PATH:" + migrationConfigFileName);
+                    try {
+                        config = Utility.loadMigrationConfig(migrationConfigFileName);
+                    } catch (MigrationClientException e) {
+                        log.error("Error while loading migration configs.", e);
+                    }
+                    log.info(Constant.MIGRATION_LOG + "Successfully loaded the config file.");
+                }
             }
-            log.info(Constant.MIGRATION_LOG + "Successfully loaded the config file.");
         }
 
         return Config.config;
@@ -209,10 +213,12 @@ public class Config {
     }
 
     public String getDataSource() {
+
         return dataSource;
     }
 
     public void setDataSource(String dataSource) {
+
         this.dataSource = dataSource;
     }
 }

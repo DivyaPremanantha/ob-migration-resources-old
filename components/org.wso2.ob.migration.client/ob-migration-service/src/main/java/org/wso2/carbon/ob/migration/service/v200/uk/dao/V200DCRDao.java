@@ -17,6 +17,9 @@ import org.wso2.carbon.ob.migration.service.v200.uk.model.DCRModel;
 import java.sql.Connection;
 import java.util.List;
 
+/**
+ * Data access interface for DCR data.
+ */
 public interface V200DCRDao {
 
     List<DCRModel> getDCRDetails(Connection connection) throws OpenBankingException;

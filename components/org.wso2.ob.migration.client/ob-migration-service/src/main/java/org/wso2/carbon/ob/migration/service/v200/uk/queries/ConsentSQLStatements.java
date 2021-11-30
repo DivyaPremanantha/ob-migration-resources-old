@@ -11,6 +11,9 @@
  */
 package org.wso2.carbon.ob.migration.service.v200.uk.queries;
 
+/**
+ * SQL statements common to all database types
+ */
 public abstract class ConsentSQLStatements {
 
     public abstract String getConsentInitiations();

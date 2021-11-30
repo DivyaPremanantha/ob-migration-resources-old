@@ -30,6 +30,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Implementation of V200ConsentDao class
+ */
 public class V200ConsentDaoImpl implements V200ConsentDao {
 
     private static Log log = LogFactory.getLog(V200ConsentDaoImpl.class);
@@ -154,7 +157,8 @@ public class V200ConsentDaoImpl implements V200ConsentDao {
     }
 
     @Override
-    public String getFileUploadIdempotencyKeyByConsentId(Connection connection, String consentId) throws OpenBankingException {
+    public String getFileUploadIdempotencyKeyByConsentId(Connection connection, String consentId)
+            throws OpenBankingException {
 
         String sqlStatements = this.sqlStatements.getFileUploadIdempotencyKeyByConsentId();
 

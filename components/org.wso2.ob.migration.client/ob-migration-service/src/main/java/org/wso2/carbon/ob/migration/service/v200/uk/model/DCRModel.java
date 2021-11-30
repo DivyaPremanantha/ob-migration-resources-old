@@ -11,6 +11,9 @@
  */
 package org.wso2.carbon.ob.migration.service.v200.uk.model;
 
+/**
+ * DCR data model class for UK v200 DB schema
+ */
 public class DCRModel {
     private String id = null;
     private String tppName = null;
@@ -30,7 +33,9 @@ public class DCRModel {
 
     }
 
-    public DCRModel(String id, String tppName, String requestHeader, String request, String clientId, String softwareEnv, String applicationId, String softwareId, String specVersion, String createdTimestamp, String status, String clidIssuedAt, String statusUpdateTimestamp) {
+    public DCRModel(String id, String tppName, String requestHeader, String request, String clientId,
+                    String softwareEnv, String applicationId, String softwareId, String specVersion,
+                    String createdTimestamp, String status, String clidIssuedAt, String statusUpdateTimestamp) {
         this.id = id;
         this.tppName = tppName;
         this.requestHeader = requestHeader;

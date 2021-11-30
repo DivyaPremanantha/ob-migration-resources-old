@@ -18,6 +18,9 @@ import org.wso2.carbon.ob.migration.service.v200.uk.queries.DCRSQLStatements;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+/**
+ * This class handles DCR DAO layer initiation with the relevant SQL statements per database types
+ */
 public class V200DCRDaoInitializer {
 
     private static V200DCRDao v200DCRDao = null;

@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -53,11 +54,13 @@ public class ReportUtil {
 
         if (builder.length() > MAX_LENGTH) {
             Thread thread = new Thread(() -> {
-                try {
-                    commit();
-                    log.info("Report file with name {} created inside {}.", fileName, filePath);
-                } catch (IOException e) {
-                    log.error("Error while writing the report file.", e);
+                synchronized (this) {
+                    try {
+                        commit();
+                        log.info("Report file with name {} created inside {}.", fileName, filePath);
+                    } catch (IOException e) {
+                        log.error("Error while writing the report file.", e);
+                    }
                 }
             });
             thread.start();
@@ -85,7 +88,7 @@ public class ReportUtil {
             Files.createFile(path);
         }
 
-        Files.write(path, builder.toString().getBytes(), StandardOpenOption.APPEND);
+        Files.write(path, builder.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND);
         builder = new StringBuilder();
     }
 }

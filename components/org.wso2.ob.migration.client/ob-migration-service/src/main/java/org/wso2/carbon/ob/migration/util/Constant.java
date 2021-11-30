@@ -78,6 +78,9 @@ public class Constant {
     public static final String SYMMETRIC_KEY_CRYPTO_PROVIDER = "org.wso2.carbon.crypto.provider" +
             ".SymmetricKeyInternalCryptoProvider";
 
+    /**
+     * ClaimDataMigratorConstants Class
+     */
     public static class ClaimDataMigratorConstants {
 
         public static final String MIGRATOR_PARAMETER_USE_OWN_CLAIM_DATA_FILE = "useOwnClaimDataFile";
