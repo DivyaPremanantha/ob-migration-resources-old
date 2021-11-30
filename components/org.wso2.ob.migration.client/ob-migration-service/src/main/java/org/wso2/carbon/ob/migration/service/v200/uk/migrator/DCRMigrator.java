@@ -54,7 +54,6 @@ public class DCRMigrator extends Migrator {
     public void migrate() throws MigrationClientException {
 
         try (Connection connection = getDataSource().getConnection()) {
-            connection.setAutoCommit(false);
             V200DCRDao v200DCRDao = V200DCRDaoInitializer.initializeDCRDao(connection);
             migrateDCR(connection, v200DCRDao);
 
@@ -77,6 +76,7 @@ public class DCRMigrator extends Migrator {
                         (Map<String, Object>) gson.fromJson(dcrModel.getRequest(), Map.class);
                 Map<String, Object> spProperties = new HashMap<>();
                 boolean isSpPropertyModified = false;
+                // Remove "_production" and "_sandbox" prefix
                 for (Map.Entry<String, Object> attribute : requestAttributes.entrySet()) {
                     boolean isSpPropertyAvailable = false;
                     if (serviceProvider.getSpProperties().length > 0) {
@@ -108,6 +108,7 @@ public class DCRMigrator extends Migrator {
                     index++;
                 }
 
+                // Add SP properties which was not included in the previous version to metadata
                 if (serviceProviderProperties.length > 0) {
                     serviceProvider.setSpProperties(serviceProviderProperties);
                     ApplicationDAO appDAO = ApplicationMgtSystemConfig.getInstance().getApplicationDAO();

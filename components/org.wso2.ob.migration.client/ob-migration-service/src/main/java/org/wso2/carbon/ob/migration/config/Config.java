@@ -33,13 +33,7 @@ public class Config {
     private String migrateVersion;
     private boolean continueOnError;
     private boolean batchUpdate;
-    private boolean ignoreForInactiveTenants;
-    private boolean migrateTenantRange;
-    private int migrationStartingTenantID;
-    private int migrationEndingTenantID;
     private List<Version> versions = new ArrayList<>();
-    private String currentEncryptionAlgorithm;
-    private String migratedEncryptionAlgorithm;
     private String dataSource;
 
     private Config() {
@@ -49,7 +43,7 @@ public class Config {
     /**
      * Loading configs.
      *
-     * @return
+     * @return configuration file
      */
     public static Config getInstance() {
 
@@ -150,66 +144,6 @@ public class Config {
     public void setBatchUpdate(boolean batchUpdate) {
 
         this.batchUpdate = batchUpdate;
-    }
-
-    public boolean isIgnoreForInactiveTenants() {
-
-        return ignoreForInactiveTenants;
-    }
-
-    public void setIgnoreForInactiveTenants(boolean ignoreForInactiveTenants) {
-
-        this.ignoreForInactiveTenants = ignoreForInactiveTenants;
-    }
-
-    public boolean isMigrateTenantRange() {
-
-        return migrateTenantRange;
-    }
-
-    public void setMigrateTenantRange(boolean migrateTenantRange) {
-
-        this.migrateTenantRange = migrateTenantRange;
-    }
-
-    public int getMigrationStartingTenantID() {
-
-        return migrationStartingTenantID;
-    }
-
-    public void setMigrationStartingTenantID(int migrationStartingTenantID) {
-
-        this.migrationStartingTenantID = migrationStartingTenantID;
-    }
-
-    public int getMigrationEndingTenantID() {
-
-        return migrationEndingTenantID;
-    }
-
-    public void setMigrationEndingTenantID(int migrationEndingTenantID) {
-
-        this.migrationEndingTenantID = migrationEndingTenantID;
-    }
-
-    public String getCurrentEncryptionAlgorithm() {
-
-        return currentEncryptionAlgorithm;
-    }
-
-    public void setCurrentEncryptionAlgorithm(String currentEncryptionAlgorithm) {
-
-        this.currentEncryptionAlgorithm = currentEncryptionAlgorithm;
-    }
-
-    public String getMigratedEncryptionAlgorithm() {
-
-        return migratedEncryptionAlgorithm;
-    }
-
-    public void setMigratedEncryptionAlgorithm(String migratedEncryptionAlgorithm) {
-
-        this.migratedEncryptionAlgorithm = migratedEncryptionAlgorithm;
     }
 
     public String getDataSource() {

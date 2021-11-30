@@ -28,7 +28,6 @@ public abstract class Migrator {
     public static final String SCHEMA = "schema";
     public static final String CONTINUE_ON_ERROR = "continueOnError";
     public static final String BATCH_UPDATE = "batchUpdate";
-    public static final String IGNORE_FOR_INACTIVE_TENANTS = "ignoreForInactiveTenants";
 
     private MigratorConfig migratorConfig;
     private Version versionConfig;
@@ -65,15 +64,6 @@ public abstract class Migrator {
             return Config.getInstance().isBatchUpdate();
         }
         return Boolean.parseBoolean(batchUpdate);
-    }
-
-    public boolean isIgnoreForInactiveTenants() {
-
-        String ignoreForInactiveTenants = getMigratorConfig().getParameterValue(IGNORE_FOR_INACTIVE_TENANTS);
-        if (StringUtils.isBlank(ignoreForInactiveTenants)) {
-            return Config.getInstance().isIgnoreForInactiveTenants();
-        }
-        return Boolean.parseBoolean(ignoreForInactiveTenants);
     }
 
     public String getSchema() {

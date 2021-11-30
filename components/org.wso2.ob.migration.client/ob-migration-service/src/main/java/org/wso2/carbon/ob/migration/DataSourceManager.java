@@ -27,13 +27,13 @@ import javax.sql.DataSource;
 public class DataSourceManager {
 
     private static final Logger log = LoggerFactory.getLogger(DataSourceManager.class);
-    private static volatile DataSourceManager dataSourceManager = null;
+    private static volatile DataSourceManager dataSourceManager;
     private DataSource dataSource;
 
     private DataSourceManager() {
 
         try {
-            initObDataSource();
+            initializeObDataSource();
         } catch (MigrationClientException e) {
             log.error("Error while initializing datasource manager.", e);
         }
@@ -41,14 +41,14 @@ public class DataSourceManager {
 
     public static DataSourceManager getInstance() {
 
-        if (DataSourceManager.dataSourceManager == null) {
+        if (dataSourceManager == null) {
             synchronized (DataSourceManager.class) {
-                if (DataSourceManager.dataSourceManager == null) {
-                    DataSourceManager.dataSourceManager = new DataSourceManager();
+                if (dataSourceManager == null) {
+                    dataSourceManager = new DataSourceManager();
                 }
             }
         }
-        return DataSourceManager.dataSourceManager;
+        return dataSourceManager;
     }
 
     /**
@@ -56,7 +56,7 @@ public class DataSourceManager {
      *
      * @throws MigrationClientException
      */
-    private void initObDataSource() throws MigrationClientException {
+    private void initializeObDataSource() throws MigrationClientException {
         Config config = Config.getInstance();
         try {
             Context ctx = new InitialContext();

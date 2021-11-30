@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import org.wso2.carbon.core.ServerStartupObserver;
 import org.wso2.carbon.ob.migration.config.Config;
 import org.wso2.carbon.ob.migration.util.Constant;
-import org.wso2.carbon.ob.migration.util.Utility;
 
 import java.util.List;
 
@@ -38,43 +37,29 @@ public class MigrationClientImpl implements ServerStartupObserver {
 
         try {
             Config config = Config.getInstance();
-            String spec = System.getProperty("migrationSpec");
-            log.info("............................................................................................");
-            log.info("....." + spec + ".............................................................................." +
-                    "....." +
-                    ".");
+            String spec = System.getProperty("obMigrationSpec");
 
-            if (!config.isMigrationEnable()) {
+            if (!config.isMigrationEnable() || spec == null) {
                 return;
             }
 
-            log.info("............................................................................................");
-            log.info("............................................................................................");
-            log.info("............................................................................................");
-            log.info("............................................................................................");
-            log.info("............................................................................................");
-            log.info("............................................................................................");
-            log.info("............................................................................................");
-            log.info("............................................................................................");
-            log.info("............................................................................................");
-            log.info("............................................................................................");
-            log.info("............................................................................................");
+            log.info("------------------------------------------------------------------------------------");
+            log.info("------------------------------------------------------------------------------------");
+            log.info("------------------------------------------------------------------------------------");
+            log.info("------------------------------------------------------------------------------------");
+            log.info("------------------------------------------------------------------------------------");
+            log.info("------------------------------------------------------------------------------------");
+            log.info("------------------------------------------------------------------------------------");
+
 
             VersionMigrationHolder versionMigrationHolder = VersionMigrationHolder.getInstance();
             List<VersionMigration> versionMigrationList = versionMigrationHolder.getVersionMigrationList();
 
-            log.info("Migration Versions List.........................");
-
             boolean isMigrationStarted = false;
-            if (Utility.isMigrateTenantRange()) {
-                log.info("Migration started for the tenant range " + Utility.getMigrationStartingTenantID() + " - "
-                        + Utility.getMigrationEndingTenantID());
-            }
 
             for (VersionMigration versionMigration : versionMigrationList) {
-                log.info(versionMigration.getPreviousVersion() + " to " + versionMigration.getCurrentVersion());
-                log.info(Constant.MIGRATION_LOG + "Start Version : " + versionMigration.getPreviousVersion() + " to "
-                        + versionMigration.getCurrentVersion());
+                log.info(Constant.MIGRATION_LOG + "Start Migration, Spec: " + spec + "From: " +
+                        versionMigration.getPreviousVersion() + " " + "To: " + versionMigration.getCurrentVersion());
                 if (!isMigrationStarted && versionMigration.getPreviousVersion().equals(config.getCurrentVersion())) {
                     versionMigration.migrate(spec);
                     isMigrationStarted = true;
@@ -92,21 +77,17 @@ public class MigrationClientImpl implements ServerStartupObserver {
                 }
             }
             log.info(Constant.MIGRATION_LOG + "Execution was done through all the requested version list without "
-                    + "having unexpected issues. There may be some steps that is not executed correctly but bypass "
-                    + "that because of enabling 'continueOnError' property. Please see the above logs to more "
-                    + "details.");
+                    + "having unexpected issues.");
         } catch (Throwable e) {
             log.error("Migration process was stopped.", e);
         }
 
-        log.info("............................................................................................");
-        log.info("............................................................................................");
-        log.info("............................................................................................");
-        log.info("............................................................................................");
-        log.info("............................................................................................");
-        log.info("............................................................................................");
-        log.info("............................................................................................");
-        log.info("............................................................................................");
-        log.info("............................................................................................");
+        log.info("------------------------------------------------------------------------------------");
+        log.info("------------------------------------------------------------------------------------");
+        log.info("------------------------------------------------------------------------------------");
+        log.info("------------------------------------------------------------------------------------");
+        log.info("------------------------------------------------------------------------------------");
+        log.info("------------------------------------------------------------------------------------");
+        log.info("------------------------------------------------------------------------------------");
     }
 }

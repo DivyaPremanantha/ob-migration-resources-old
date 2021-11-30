@@ -60,7 +60,6 @@ public class ConsentMigrator extends Migrator {
     public void migrate() throws MigrationClientException {
 
         try (Connection connection = getDataSource().getConnection()) {
-            connection.setAutoCommit(false);
 
             V200ConsentDao v200AccountsConsentDao = V200ConsentDaoInitializer.initializeAccountsConsentDAO(connection);
             migrateConsent(connection, v200AccountsConsentDao, UKCommonConstants.ACCOUNTS);
@@ -221,7 +220,6 @@ public class ConsentMigrator extends Migrator {
 
     private String getV3Status(String status) {
         String currentStatus;
-        //authorized
         if (UKCommonConstants.V2_AWAITING_AUTHORISATION.equalsIgnoreCase(status)) {
             currentStatus = UKCommonConstants.V3_AWAITING_AUTHORISATION;
         } else if (UKCommonConstants.V2_AUTHORISED.equalsIgnoreCase(status)) {
