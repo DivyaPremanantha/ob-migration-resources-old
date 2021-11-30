@@ -13,7 +13,11 @@ package org.wso2.carbon.ob.migration.service.v200.uk.migrator;
 
 import com.wso2.openbanking.accelerator.common.exception.OpenBankingException;
 import com.wso2.openbanking.accelerator.consent.mgt.dao.ConsentCoreDAO;
-import com.wso2.openbanking.accelerator.consent.mgt.dao.models.*;
+import com.wso2.openbanking.accelerator.consent.mgt.dao.models.AuthorizationResource;
+import com.wso2.openbanking.accelerator.consent.mgt.dao.models.ConsentAttributes;
+import com.wso2.openbanking.accelerator.consent.mgt.dao.models.ConsentMappingResource;
+import com.wso2.openbanking.accelerator.consent.mgt.dao.models.ConsentResource;
+import com.wso2.openbanking.accelerator.consent.mgt.dao.models.ConsentStatusAuditRecord;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +43,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * ConsentMigrator class to migrate consent related data.
+ */
 public class ConsentMigrator extends Migrator {
 
     private static final Logger log = LoggerFactory.getLogger(ConsentMigrator.class);
@@ -115,8 +122,9 @@ public class ConsentMigrator extends Migrator {
                 // Store OB_CONSENT_AUTH_RESOURCE for each user
                 String authType = getAuthType(distinctUserIds);
                 Map<String, String> statusMap = getStatus(currentStatus);
-                AuthorizationResource authorizationResource = new AuthorizationResource(consentInitiation.getId(), userId,
-                        statusMap.get(UKCommonConstants.AUTH_STATUS), authType, consentResource.getUpdatedTime());
+                AuthorizationResource authorizationResource = new AuthorizationResource(consentInitiation.getId(),
+                        userId, statusMap.get(UKCommonConstants.AUTH_STATUS), authType,
+                        consentResource.getUpdatedTime());
                 v300ConsentCoreDAO.storeAuthorizationResource(connection, authorizationResource);
 
                 List<UKConsentBindingModel> userConsentBindings = consentBindingByConsentId.stream()
@@ -148,18 +156,19 @@ public class ConsentMigrator extends Migrator {
                         actionBy, UKCommonConstants.V3_AWAITING_AUTHORISATION);
                 v300ConsentCoreDAO.storeConsentStatusAuditRecord(connection, rejectedConsentAudit);
             } else {
-                ConsentStatusAuditRecord authorizedConsentAudit = new ConsentStatusAuditRecord(consentInitiation.getId(),
-                        UKCommonConstants.V3_AUTHORISED, actionTime, UKCommonConstants.REASON_BIND_CONSENT,
-                        actionBy, UKCommonConstants.V3_AWAITING_AUTHORISATION);
+                ConsentStatusAuditRecord authorizedConsentAudit = new ConsentStatusAuditRecord(
+                        consentInitiation.getId(), UKCommonConstants.V3_AUTHORISED, actionTime,
+                        UKCommonConstants.REASON_BIND_CONSENT, actionBy, UKCommonConstants.V3_AWAITING_AUTHORISATION);
                 v300ConsentCoreDAO.storeConsentStatusAuditRecord(connection, authorizedConsentAudit);
 
                 if (UKCommonConstants.V3_REVOKED.equalsIgnoreCase(currentStatus)) {
                     List<UKAccountConsentRevHistoryModel> revHistoryModels =
                             v200ConsentDao.getConsentRevHistoryByConsentId(connection,
                                     consentInitiation.getId());
-                    ConsentStatusAuditRecord revokedConsentAudit = new ConsentStatusAuditRecord(consentInitiation.getId(),
-                            UKCommonConstants.V3_REVOKED, updatedTime, revHistoryModels.get(0).getRevocationReason(),
-                            revHistoryModels.get(0).getRevocationUser(), UKCommonConstants.V3_AUTHORISED);
+                    ConsentStatusAuditRecord revokedConsentAudit = new ConsentStatusAuditRecord(
+                            consentInitiation.getId(), UKCommonConstants.V3_REVOKED, updatedTime,
+                            revHistoryModels.get(0).getRevocationReason(), revHistoryModels.get(0).getRevocationUser(),
+                            UKCommonConstants.V3_AUTHORISED);
                     v300ConsentCoreDAO.storeConsentStatusAuditRecord(connection, revokedConsentAudit);
                 } else if (UKCommonConstants.V3_CONSUMED.equalsIgnoreCase(currentStatus)) {
                     ConsentStatusAuditRecord consumedConsentAudit =
@@ -194,7 +203,9 @@ public class ConsentMigrator extends Migrator {
         v300ConsentCoreDAO.storeConsentAttributes(connection, consentAttributes);
     }
 
-    private V200ConsentDao getV200ConsentDao(String consentType, Connection connection) throws MigrationClientException {
+    private V200ConsentDao getV200ConsentDao(String consentType, Connection connection)
+            throws MigrationClientException {
+
         V200ConsentDao v200ConsentDao;
         if (UKCommonConstants.ACCOUNTS.equalsIgnoreCase(consentType)) {
             v200ConsentDao = V200ConsentDaoInitializer.initializeAccountsConsentDAO(connection);
@@ -213,7 +224,7 @@ public class ConsentMigrator extends Migrator {
         //authorized
         if (UKCommonConstants.V2_AWAITING_AUTHORISATION.equalsIgnoreCase(status)) {
             currentStatus = UKCommonConstants.V3_AWAITING_AUTHORISATION;
-        } else if (UKCommonConstants.V2_AUTHORISED.equalsIgnoreCase(status)){
+        } else if (UKCommonConstants.V2_AUTHORISED.equalsIgnoreCase(status)) {
             currentStatus = UKCommonConstants.V3_AUTHORISED;
         } else {
             currentStatus = status.toLowerCase(Locale.ROOT);
@@ -222,6 +233,7 @@ public class ConsentMigrator extends Migrator {
     }
 
     private String getAccountID(UKConsentBindingModel userConsentBinding, String consentType) {
+
         String accountID;
         if (UKCommonConstants.PAYMENTS.equalsIgnoreCase(consentType)) {
             accountID = userConsentBinding.getDebtorAccount();
@@ -232,6 +244,7 @@ public class ConsentMigrator extends Migrator {
     }
 
     private Map<String, String> getStatus(String status) {
+
         Map<String, String> statusMap = new HashMap<>();
         if (UKCommonConstants.V3_AUTHORISED.equalsIgnoreCase(status)) {
             statusMap.put(UKCommonConstants.AUTH_STATUS, UKCommonConstants.V3_AUTHORISED);
@@ -261,10 +274,12 @@ public class ConsentMigrator extends Migrator {
     }
 
     private boolean getRecurringIndicator(String consentType) {
+
         return !(UKCommonConstants.PAYMENTS.equalsIgnoreCase(consentType));
     }
 
     private long getValidityPeriod(UKConsentInitiationModel consentInitiation, String consentType) {
+
         if (!(UKCommonConstants.PAYMENTS.equalsIgnoreCase(consentType))) {
             return UKUtils.getExpirationTimeFromReceipt(consentInitiation.getRequest());
         }
@@ -273,6 +288,7 @@ public class ConsentMigrator extends Migrator {
 
     private Map<String, String> getAttributesMap(UKConsentInitiationModel consentInitiation,
                                                  String fileUploadIdempotencyKey, String consentType) {
+
         Map<String, String> attributesMap = new HashMap<>();
         attributesMap.put(UKCommonConstants.SPEC_VERSION, consentInitiation.getSpecVersion());
         if (UKCommonConstants.PAYMENTS.equalsIgnoreCase(consentType)) {
